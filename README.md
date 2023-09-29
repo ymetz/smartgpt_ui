@@ -6,7 +6,7 @@ SmarGPT enhances the reasoning capabilities of GPT-style models with prompting a
 
 
 
-The interface of SmartGPZ uses [SmartGPT](https://github.com/mckaywrigley/chatbot-ui) as a foundation.
+The interface of SmartGPT uses [Chatbot-UI](https://github.com/mckaywrigley/chatbot-ui) as a foundation.
 
 ## Updates
 
@@ -56,18 +56,9 @@ When deploying the application, the following environment variables can be set:
 | OPENAI_API_HOST                   | `https://api.openai.com`       | The base url, for Azure use `https://<endpoint>.openai.azure.com`                                                                         |
 | OPENAI_API_TYPE                   | `openai`                       | The API type, options are `openai` or `azure`                                                                                             |
 | OPENAI_API_VERSION                | `2023-03-15-preview`           | Only applicable for Azure OpenAI                                                                                                          |
-| AZURE_DEPLOYMENT_ID               |                                | Needed when Azure OpenAI, Ref [Azure OpenAI API](https://learn.microsoft.com/zh-cn/azure/cognitive-services/openai/reference#completions) |
-| OPENAI_ORGANIZATION               |                                | Your OpenAI organization ID                                                                                                               |
-| DEFAULT_MODEL                     | `gpt-3.5-turbo`                | The default model to use on new conversations, for Azure use `gpt-35-turbo`                                                               |
-| NEXT_PUBLIC_DEFAULT_SYSTEM_PROMPT | [see here](utils/app/const.ts) | The default system prompt to use on new conversations                                                                                     |
-| NEXT_PUBLIC_DEFAULT_TEMPERATURE   | 1                              | The default temperature to use on new conversations                                                                                       |
-| GOOGLE_API_KEY                    |                                | See [Custom Search JSON API documentation][GCSE]                                                                                          |
-| GOOGLE_CSE_ID                     |                                | See [Custom Search JSON API documentation][GCSE]                                                                                          |
-
-If you do not provide an OpenAI API key with `OPENAI_API_KEY`, users will have to provide their own key.
-
-If you don't have an OpenAI API key, you can get one [here](https://platform.openai.com/account/api-keys).
-
-## Contact
-
-[GCSE]: https://developers.google.com/custom-search/v1/overview
+| DEFAULT_SYSTEM_PROMPT             |                                | The default prompt used for the system, if not provided, the system will use the default prompt for the selected prompt mode               |
+| DEFAULT_ASSISTANT_PROMPT          |                                | The default prompt used for the assistant, if not provided, the assistant will use the default prompt for the selected prompt mode        |
+| DEFAULT_RESEARCHER_PROMPT         |                                | The default prompt used for the researcher, if not provided, the researcher will use the default prompt for the selected prompt mode      |
+| DEFAULT_RESOLVER_PROMPT           |                                | The default prompt used for the resolver, if not provided, the resolver will use the default prompt for the selected prompt mode          |
+| DEFAULT_TEMPERATURE               | `0.8`                          | The default temperature used for the system, if not provided, the system will use the default temperature for the selected prompt mode    |
+| DEFAULT_PROMPT_MODE               | `smartgpt`                     | The default prompt mode, options are `smartgpt` or `default`                                                                                 |
