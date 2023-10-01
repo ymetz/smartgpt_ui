@@ -435,7 +435,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
 
                       <CustomOptions
                         label={t('Custom Method Options')}
-                        promptMode={selectedConversation?.promptMode}
+                        promptMode={selectedConversation?.promptMode || 'default'}
                         onChangeOption={(options: PluginOption[]) =>
                           handleUpdateConversation(selectedConversation, {
                             key: 'options',
@@ -522,7 +522,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                   handleSend(currentMessage, 2, plugin);
                 }
               }}
-              promptMode={selectedConversation?.promptMode}
+              promptMode={selectedConversation?.promptMode || 'default'}
               showScrollDownButton={showScrollDownButton}
             />
         </>
