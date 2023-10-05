@@ -47,7 +47,7 @@ const Promptbar = () => {
     if (defaultModelId) {
       const newPrompt: Prompt = {
         id: uuidv4(),
-        name: `Prompt ${prompts.length + 1}`,
+        name: `Template ${prompts.length + 1}`,
         description: '',
         content: '',
         model: OpenAIModels[defaultModelId],
@@ -84,7 +84,7 @@ const Promptbar = () => {
 
   const InfoText = () => {
     return (
-            <div className="flex flex-col justify-between h-full">
+            <div className="flex flex-col justify-between h-fit mt-10">
               <div className="flex flex-col">
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   {t('Add templates for prompt modes here')}

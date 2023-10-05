@@ -23,6 +23,7 @@ interface Props<T> {
   handleCreateItem: () => void;
   handleCreateFolder: () => void;
   handleDrop: (e: any) => void;
+  promptMode?: string;
 }
 
 const Sidebar = <T,>({

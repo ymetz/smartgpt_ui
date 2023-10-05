@@ -102,7 +102,7 @@ const handler = async (req: Request): Promise<Response> => {
     // RESEARCHER PHASE *****************
     const researcherPrompt = initialResponses.reduce((acc, currentResponse, idx) => {
         return acc + `Answer Option ${idx+1}: ${currentResponse} \n\n`;
-    }, substituteNumAsks(customResearcherPrompt));
+    }, substituteNumAsks(customResearcherPrompt + `\n`));
 
     const researcherMessagesToSend = [{ role: "user", content: researcherPrompt }, { role: "assistant", content: customAssistantPrompt }] as Message[];
 
@@ -135,12 +135,12 @@ const handler = async (req: Request): Promise<Response> => {
         "", prompt, "",
         "### Initial GPT Answers",
         "", initialGptAnswersFormatted.join('\n'), "",
-        "### Researcher Prompt",
-        "", researcherPrompt, "",
+        //"### Researcher Prompt",
+        //"", researcherPrompt, "",
         "### Researcher Response",
         "", researcherResponse, "",
-        "### Resolver Prompt",
-        "", resolverPrompt, "",
+        //"### Resolver Prompt",
+        //"", resolverPrompt, "",
         "### Final Output", "",
     ].join("\n");
 

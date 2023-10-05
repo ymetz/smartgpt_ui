@@ -49,7 +49,7 @@ export const CustomOptions: FC<Props> = ({
                     maxHeight: '300px',
                     overflow: `auto`,
                     }}
-                    value={option.value}
+                    value={option.value as string}
                     onChange={(e) => {
                         const newOptions = options.map((o) => {
                             if (o.name === option.name) {
@@ -75,7 +75,7 @@ export const CustomOptions: FC<Props> = ({
                     overflow: `auto`,
                     }}
                     type="number"
-                    value={option.value}
+                    value={option.value as number}
                     onChange={(e) => {
                         const newOptions = options.map((o) => {
                             if (o.name === option.name) {
@@ -95,7 +95,7 @@ export const CustomOptions: FC<Props> = ({
             return (
                 <input
                     type="checkbox"
-                    checked={option.value}
+                    checked={option.value as boolean}
                     onChange={(e) => {
                         const newOptions = options.map((o) => {
                             if (o.name === option.name) {

@@ -18,6 +18,8 @@ import SidebarActionButton from '@/components/Buttons/SidebarActionButton';
 
 import PromptbarContext from '../PromptBar.context';
 import { PromptModal } from './PromptModal';
+import { SmartPromptModal } from './SmartPromptModal';
+import HomeContext from '@/pages/api/home/home.context';
 
 interface Props {
   prompt: Prompt;
@@ -29,6 +31,7 @@ export const PromptComponent = ({ prompt }: Props) => {
     handleUpdatePrompt,
     handleDeletePrompt,
   } = useContext(PromptbarContext);
+  const { promptMode } = useContext(HomeContext).state;
 
   const [showModal, setShowModal] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -119,11 +122,20 @@ export const PromptComponent = ({ prompt }: Props) => {
       )}
 
       {showModal && (
+        promptMode === 'smartgpt' ? (
+        <SmartPromptModal
+          prompt={prompt}
+          onClose={() => setShowModal(false)}
+          onUpdatePrompt={handleUpdate}
+        />
+      ) :
+      (
         <PromptModal
           prompt={prompt}
           onClose={() => setShowModal(false)}
           onUpdatePrompt={handleUpdate}
         />
+      )
       )}
     </div>
   );

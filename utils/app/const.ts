@@ -18,7 +18,7 @@ export const OPENAI_API_HOST =
   process.env.OPENAI_API_HOST || 'https://api.openai.com';
 
 export const DEFAULT_TEMPERATURE = 
-  process.env.DEFAULT_TEMPERATURE || 0.8;
+  parseFloat(process.env.DEFAULT_TEMPERATURE || '0.9');
 
 export const DEFAULT_PROMPT_MODE =
   process.env.DEFAULT_PROMPT_MODE || 'smartgpt';
