@@ -1,4 +1,5 @@
 import { OpenAIModel } from './openai';
+import { AnthropicModel } from './anthropic';
 import { PluginOption, ApiKeys } from './plugin';
 
 export interface Message {
@@ -9,7 +10,7 @@ export interface Message {
 export type Role = 'assistant' | 'user';
 
 export interface ChatBody {
-  model: OpenAIModel;
+  model: OpenAIModel | AnthropicModel;
   messages: Message[];
   keys: ApiKeys;
   prompt: string;
@@ -21,7 +22,7 @@ export interface Conversation {
   id: string;
   name: string;
   messages: Message[];
-  model: OpenAIModel;
+  model: OpenAIModel | AnthropicModel;
   promptMode: string;
   prompt: string;
   temperature: number;

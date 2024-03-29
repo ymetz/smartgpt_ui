@@ -15,7 +15,7 @@ export const config = {
 
 const handler = async (req: Request): Promise<Response> => {
   try {
-    const { model, messages, key, prompt, temperature } = (await req.json()) as ChatBody;
+    const { model, messages, keys, prompt, temperature } = (await req.json()) as ChatBody;
 
     await init((imports) => WebAssembly.instantiate(wasm, imports));
     const encoding = new Tiktoken(
@@ -55,7 +55,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     encoding.free();
 
-    const stream = await OpenAIStream(model, promptToSend, temperatureToUse, key, messagesToSend);
+    console.log('model.id:', model.id);
+
+    let stream: any;
+    if (model.id.includes('gpt')) {
+      const key = keys.openai;
+      stream = await OpenAIStream(model, promptToSend, temperatureToUse, key, messagesToSend);
+    } else if (model.id.includes('claude')) {
+      const key = keys.anthropic;
+      //stream = await AnthropicStream(model, promptToSend, temperatureToUse, key, messagesToSend);
+    } else {
+      return new Response('Error: Unknown Model', { status: 500 });
+    }
+
 
     return new Response(stream);
   } catch (error) {
