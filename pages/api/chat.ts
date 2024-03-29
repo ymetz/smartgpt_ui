@@ -1,5 +1,5 @@
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const';
-import { OpenAIError, OpenAIStream } from '@/utils/server';
+import { OpenAIError, OpenAIStream, AnthropicError, AnthropicStream } from '@/utils/server';
 
 import { ChatBody, Message } from '@/types/chat';
 
@@ -63,7 +63,7 @@ const handler = async (req: Request): Promise<Response> => {
       stream = await OpenAIStream(model, promptToSend, temperatureToUse, key, messagesToSend);
     } else if (model.id.includes('claude')) {
       const key = keys.anthropic;
-      //stream = await AnthropicStream(model, promptToSend, temperatureToUse, key, messagesToSend);
+      stream = await AnthropicStream(model, promptToSend, temperatureToUse, key, messagesToSend);
     } else {
       return new Response('Error: Unknown Model', { status: 500 });
     }
@@ -73,6 +73,8 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error) {
     console.error(error);
     if (error instanceof OpenAIError) {
+      return new Response('Error', { status: 500, statusText: error.message });
+    } else if (error instanceof AnthropicError) {
       return new Response('Error', { status: 500, statusText: error.message });
     } else {
       return new Response('Error', { status: 500 });
