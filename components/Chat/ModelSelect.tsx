@@ -4,6 +4,7 @@ import { useContext } from 'react';
 import { useTranslation } from 'next-i18next';
 
 import { OpenAIModel } from '@/types/openai';
+import { AnthropicModel } from '@/types/anthropic';
 
 import HomeContext from '@/pages/api/home/home.context';
 
@@ -22,7 +23,7 @@ export const ModelSelect = () => {
         key: 'model',
         value: models.find(
           (model) => model.id === e.target.value,
-        ) as OpenAIModel,
+        ) as OpenAIModel | AnthropicModel,
       });
   };
 
@@ -58,7 +59,15 @@ export const ModelSelect = () => {
           className="flex items-center"
         >
           <IconExternalLink size={18} className={'inline mr-1'} />
-          {t('View Account Usage')}
+          {t('View OpenAI Account Usage')}
+        </a>
+        <a
+          href="https://console.anthropic.com/settings/usage"
+          target="_blank"
+          className="flex items-center ml-4"
+        >
+          <IconExternalLink size={18} className={'inline mr-1'} />
+          {t('View Antrophic Account Usage')}
         </a>
       </div>
     </div>

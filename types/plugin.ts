@@ -22,6 +22,24 @@ export enum DataType {
   BOOLEAN = 'boolean',
 }
 
+export enum Providers {
+  OPENAI = 'openai',
+  ANTHROPIC = 'anthropic',
+  MISTRAL = 'mistral',
+  GEMINI = 'gemini',
+}
+
+export interface ApiKeys {
+  [Providers.OPENAI]: string;
+  [Providers.ANTHROPIC]: string;
+  [Providers.MISTRAL]: string;
+  [Providers.GEMINI]: string;
+}
+
+export const atLeastOneApiKeySet = (apiKeys: ApiKeys): boolean => {
+  return Object.values(apiKeys).some((key) => key !== '');
+}
+
 export interface PluginKey {
   pluginId: PluginID;
   requiredKeys: KeyValuePair[];

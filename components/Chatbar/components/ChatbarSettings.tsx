@@ -1,5 +1,5 @@
 import { IconFileExport, IconSettings } from '@tabler/icons-react';
-import { useContext, useState } from 'react';
+import { Provider, useContext, useState } from 'react';
 
 import { useTranslation } from 'next-i18next';
 
@@ -13,6 +13,7 @@ import { SidebarButton } from '../../Sidebar/SidebarButton';
 import ChatbarContext from '../Chatbar.context';
 import { ClearConversations } from './ClearConversations';
 import { PluginKeys } from './PluginKeys';
+import { Providers } from '@/types/plugin';
 
 export const ChatbarSettings = () => {
   const { t } = useTranslation('sidebar');
@@ -20,10 +21,8 @@ export const ChatbarSettings = () => {
 
   const {
     state: {
-      apiKey,
+      apiKeys,
       lightMode,
-      serverSideApiKeyIsSet,
-      serverSidePluginKeysSet,
       conversations,
     },
     dispatch: homeDispatch,
@@ -56,11 +55,14 @@ export const ChatbarSettings = () => {
         onClick={() => setIsSettingDialog(true)}
       />
 
-      {!serverSideApiKeyIsSet ? (
-        <Key modelName="OpenAI API Key" apiKey={apiKey} onApiKeyChange={handleApiKeyChange} />
-      ) : null}
+      {apiKeys && 
+      <>
+      <Key modelName="OpenAI API Key" provider="openai" apiKey={apiKeys[Providers.OPENAI]} onApiKeyChange={(apiKey: string) => handleApiKeyChange(Providers.OPENAI, apiKey)} />
+      <Key modelName="Anthropic API Key" provider="anthropic" apiKey={apiKeys[Providers.ANTHROPIC] || ''} onApiKeyChange={(apiKey: string) => handleApiKeyChange(Providers.ANTHROPIC, apiKey)} /> 
+      </>
+      }
 
-      {!serverSidePluginKeysSet ? <PluginKeys /> : null}
+      <PluginKeys />
 
       <SettingDialog
         open={isSettingDialogOpen}

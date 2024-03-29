@@ -12,7 +12,7 @@ import { exportData, importData } from '@/utils/app/importExport';
 import { Conversation } from '@/types/chat';
 import { LatestExportFormat, SupportedExportFormats } from '@/types/export';
 import { OpenAIModels } from '@/types/openai';
-import { PluginKey } from '@/types/plugin';
+import { ApiKeys, PluginKey } from '@/types/plugin';
 
 import HomeContext from '@/pages/api/home/home.context';
 
@@ -34,7 +34,7 @@ export const Chatbar = () => {
   });
 
   const {
-    state: { conversations, showChatbar, defaultModelId, folders, pluginKeys },
+    state: { conversations, showChatbar, defaultModelId, folders, pluginKeys, apiKeys },
     dispatch: homeDispatch,
     handleCreateFolder,
     handleNewConversation,
@@ -47,12 +47,14 @@ export const Chatbar = () => {
   } = chatBarContextValue;
 
   const handleApiKeyChange = useCallback(
-    (apiKey: string) => {
-      homeDispatch({ field: 'apiKey', value: apiKey });
+    (provider: string, apiKey: string) => {
+      console.log('provider', provider, 'apiKey', apiKey);
+      const fieldName = provider as keyof ApiKeys;
+      homeDispatch({ field: 'apiKeys', value: { ...apiKeys, [fieldName]: apiKey } });
 
-      localStorage.setItem('apiKey', apiKey);
+      localStorage.setItem(fieldName, apiKey);
     },
-    [homeDispatch],
+    [homeDispatch, apiKeys],
   );
 
   const handlePluginKeyChange = (pluginKey: PluginKey) => {
@@ -206,7 +208,7 @@ export const Chatbar = () => {
         value: conversations,
       });
     }
-  }, [searchTerm, conversations]);
+  }, [searchTerm, conversations, chatDispatch]);
 
   return (
     <ChatbarContext.Provider

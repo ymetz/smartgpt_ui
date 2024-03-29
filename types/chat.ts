@@ -1,5 +1,5 @@
 import { OpenAIModel } from './openai';
-import { PluginOption } from './plugin';
+import { PluginOption, ApiKeys } from './plugin';
 
 export interface Message {
   role: Role;
@@ -11,7 +11,7 @@ export type Role = 'assistant' | 'user';
 export interface ChatBody {
   model: OpenAIModel;
   messages: Message[];
-  key: string;
+  keys: ApiKeys;
   prompt: string;
   temperature: number;
   options?: PluginOption[];

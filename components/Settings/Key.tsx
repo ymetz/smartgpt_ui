@@ -7,11 +7,12 @@ import { SidebarButton } from '../Sidebar/SidebarButton';
 
 interface Props {
   modelName: string;
+  provider: string;
   apiKey: string;
   onApiKeyChange: (apiKey: string) => void;
 }
 
-export const Key: FC<Props> = ({ apiKey, onApiKeyChange, modelName }) => {
+export const Key: FC<Props> = ({ apiKey, provider, onApiKeyChange, modelName }) => {
   const { t } = useTranslation('sidebar');
   const [isChanging, setIsChanging] = useState(false);
   const [newKey, setNewKey] = useState(apiKey);
@@ -25,7 +26,7 @@ export const Key: FC<Props> = ({ apiKey, onApiKeyChange, modelName }) => {
   };
 
   const handleUpdateKey = (newKey: string) => {
-    onApiKeyChange(newKey.trim());
+    onApiKeyChange(newKey);
     setIsChanging(false);
   };
 
@@ -46,7 +47,7 @@ export const Key: FC<Props> = ({ apiKey, onApiKeyChange, modelName }) => {
         value={newKey}
         onChange={(e) => setNewKey(e.target.value)}
         onKeyDown={handleEnterDown}
-        placeholder={t('API Key') || 'API Key'}
+        placeholder={t(provider+' API Key') || provider+' API Key'}
       />
 
       <div className="flex w-[40px]">

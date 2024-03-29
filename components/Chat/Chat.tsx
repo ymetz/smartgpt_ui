@@ -23,7 +23,7 @@ import {
 import { throttle } from '@/utils/data/throttle';
 
 import { ChatBody, Conversation, Message } from '@/types/chat';
-import { Plugin, PluginID, PluginOption } from '@/types/plugin';
+import { Plugin, PluginOption, atLeastOneApiKeySet } from '@/types/plugin';
 
 import HomeContext from '@/pages/api/home/home.context';
 
@@ -50,9 +50,8 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
       selectedConversation,
       conversations,
       models,
-      apiKey,
+      apiKeys,
       pluginKeys,
-      serverSideApiKeyIsSet,
       messageIsStreaming,
       modelError,
       loading,
@@ -100,7 +99,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
         const chatBody: ChatBody = {
           model: updatedConversation.model,
           messages: updatedConversation.messages,
-          key: apiKey,
+          keys: apiKeys,
           prompt: updatedConversation.prompt,
           temperature: updatedConversation.temperature,
         };
@@ -109,19 +108,9 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
         }
         const endpoint = getEndpoint(plugin);
         let body;
-        if (!plugin || plugin.id !== PluginID.GOOGLE_SEARCH) {
-          body = JSON.stringify(chatBody);
-        } else {
-          body = JSON.stringify({
-            ...chatBody,
-            googleAPIKey: pluginKeys
-              .find((key) => key.pluginId === 'google-search')
-              ?.requiredKeys.find((key) => key.key === 'GOOGLE_API_KEY')?.value,
-            googleCSEId: pluginKeys
-              .find((key) => key.pluginId === 'google-search')
-              ?.requiredKeys.find((key) => key.key === 'GOOGLE_CSE_ID')?.value,
-          });
-        }
+        body = JSON.stringify({
+          ...chatBody
+        });
         const controller = new AbortController();
         const response = await fetch(endpoint, {
           method: 'POST',
@@ -143,7 +132,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           homeDispatch({ field: 'messageIsStreaming', value: false });
           return;
         }
-        if (!plugin || plugin.id !== PluginID.GOOGLE_SEARCH) {
+        if (!plugin) {
           if (updatedConversation.messages.length === 1) {
             const { content } = message;
             const customName =
@@ -253,7 +242,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
         }
       }
     },
-    [apiKey, conversations, homeDispatch, pluginKeys, selectedConversation, stopConversationRef],
+    [apiKeys, conversations, homeDispatch, pluginKeys, selectedConversation, stopConversationRef],
   );
 
   const scrollToBottom = useCallback(() => {
@@ -351,16 +340,13 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
 
   return (
     <div className="relative flex-1 overflow-hidden bg-white dark:bg-[#343541]">
-      {!(apiKey || serverSideApiKeyIsSet) ? (
+      {!apiKeys || !atLeastOneApiKeySet(apiKeys) ? (
         <div className="mx-auto flex h-full w-[300px] flex-col justify-center space-y-6 sm:w-[600px]">
           <div className="text-center text-4xl font-bold text-black dark:text-white">
            &#129504; SmartGPT
           </div>
           <div className="text-center text-lg text-black dark:text-white">
             <div className="mb-8">{`SmartGPT: Improved reasoning .`}</div>
-            <div className="mb-2 font-bold">
-              Important: SmartGPT is 100% unaffiliated with OpenAI.
-            </div>
           </div>
           <div className="text-center text-gray-500 dark:text-gray-400">
             <div className="mb-2">
@@ -369,7 +355,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
             </div>
             <div className="mb-2">
               {t(
-                'Please set your OpenAI API key in the bottom left of the sidebar.',
+                'Please set at least an OpenAI key or an Antrophic key in the bottom left of the sidebar. For full functionality, both keys are necessary. None of your API keys are stored on the server, they are only persisted in local browser storage.',
               )}
             </div>
             <div>
@@ -396,7 +382,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           >
             {selectedConversation?.messages.length === 0 ? (
               <>
-                <div className="mx-auto flex flex-col space-y-5 max-h-[95vh] md:space-y-10 px-3 pt-5 mb-100 md:pt-12 sm:max-w-[700px]">
+                <div className="mx-auto flex flex-col space-y-5 max-h-[95vh] md:space-y-10 px-3 mb-200 pt-5 md:pt-12 sm:max-w-[700px]">
                   
                   <div className="text-center text-3xl font-semibold text-gray-800 dark:text-gray-100">
                     {models.length === 0 ? (
@@ -453,6 +439,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                           })
                         }
                       />
+                      <div className="h-200"></div>
                     </div>
                   )}
                 </div>

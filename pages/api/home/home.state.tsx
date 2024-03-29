@@ -2,12 +2,12 @@ import { Conversation, Message } from '@/types/chat';
 import { ErrorMessage } from '@/types/error';
 import { FolderInterface } from '@/types/folder';
 import { OpenAIModel, OpenAIModelID } from '@/types/openai';
-import { PluginKey } from '@/types/plugin';
+import { PluginKey, ApiKeys, Providers } from '@/types/plugin';
 import { Prompt } from '@/types/prompt';
 import { Template } from '@/types/template';
 
 export interface HomeInitialState {
-  apiKey: string;
+  apiKeys: ApiKeys;
   pluginKeys: PluginKey[];
   loading: boolean;
   lightMode: 'light' | 'dark';
@@ -28,12 +28,15 @@ export interface HomeInitialState {
   messageError: boolean;
   searchTerm: string;
   defaultModelId: OpenAIModelID | undefined;
-  serverSideApiKeyIsSet: boolean;
-  serverSidePluginKeysSet: boolean;
 }
 
 export const initialState: HomeInitialState = {
-  apiKey: '',
+  apiKeys: {
+    [Providers.OPENAI]: '',
+    [Providers.ANTHROPIC]: '',
+    [Providers.MISTRAL]: '',
+    [Providers.GEMINI]: '',
+  },
   loading: false,
   pluginKeys: [],
   lightMode: 'dark',
@@ -54,6 +57,4 @@ export const initialState: HomeInitialState = {
   messageError: false,
   searchTerm: '',
   defaultModelId: undefined,
-  serverSideApiKeyIsSet: false,
-  serverSidePluginKeysSet: false,
 };

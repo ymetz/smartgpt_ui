@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 
-import { GetServerSideProps } from 'next';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
@@ -40,15 +39,14 @@ import HomeContext from './home.context';
 import { HomeInitialState, initialState } from './home.state';
 
 import { v4 as uuidv4 } from 'uuid';
+import { atLeastOneApiKeySet } from '@/types/plugin';
 
 interface Props {
-  serverSideApiKeyIsSet: boolean;
   serverSidePluginKeysSet: boolean;
   defaultModelId: OpenAIModelID;
 }
 
 const Home = ({
-  serverSideApiKeyIsSet,
   serverSidePluginKeysSet,
   defaultModelId,
 }: Props) => {
@@ -63,7 +61,7 @@ const Home = ({
 
   const {
     state: {
-      apiKey,
+      apiKeys,
       lightMode,
       folders,
       conversations,
@@ -78,27 +76,38 @@ const Home = ({
   const stopConversationRef = useRef<boolean>(false);
 
   const { data, error, refetch } = useQuery(
-    ['GetModels', apiKey, serverSideApiKeyIsSet],
+    ['GetModels', apiKeys],
     ({ signal }) => {
-      if (!apiKey && !serverSideApiKeyIsSet) return null;
+      if (!apiKeys || !atLeastOneApiKeySet(apiKeys)) return null;
+      
+      // Iterate through all the API keys and fetch the models, ignoring the ones that are not set
+      const apiKeysEntries = Object.entries(apiKeys);
+      
+      const promises = apiKeysEntries.map(([provider, apiKey]) => {
+        if (!apiKey) return [];
+        return getModels({provider: provider, key: apiKey}, signal);
+      });
 
-      return getModels(
-        {
-          key: apiKey,
-        },
-        signal,
-      );
+      return Promise.all(promises);
+
     },
     { enabled: true, refetchOnMount: false },
   );
 
-  useEffect(() => {
+  /*useEffect(() => {
     if (data) dispatch({ field: 'models', value: data });
   }, [data, dispatch]);
 
   useEffect(() => {
     dispatch({ field: 'modelError', value: getModelsError(error) });
-  }, [dispatch, error, getModelsError]);
+  }, [dispatch, error, getModelsError]);*/
+
+  useEffect(() => {
+    // check if all the models are fetched
+    if (data && data.every((d) => d)) {
+      dispatch({ field: 'models', value: data.flat() });
+    }
+  }, [data, dispatch]);
 
   // FETCH MODELS ----------------------------------------------
 
@@ -238,17 +247,7 @@ const Home = ({
   useEffect(() => {
     defaultModelId &&
       dispatch({ field: 'defaultModelId', value: defaultModelId });
-    serverSideApiKeyIsSet &&
-      dispatch({
-        field: 'serverSideApiKeyIsSet',
-        value: serverSideApiKeyIsSet,
-      });
-    serverSidePluginKeysSet &&
-      dispatch({
-        field: 'serverSidePluginKeysSet',
-        value: serverSidePluginKeysSet,
-      });
-  }, [defaultModelId, serverSideApiKeyIsSet, serverSidePluginKeysSet]);
+  }, [defaultModelId]);
 
   // ON LOAD --------------------------------------------
 
@@ -261,14 +260,9 @@ const Home = ({
       });
     }
 
-    const apiKey = localStorage.getItem('apiKey');
-
-    if (serverSideApiKeyIsSet) {
-      dispatch({ field: 'apiKey', value: '' });
-
-      localStorage.removeItem('apiKey');
-    } else if (apiKey) {
-      dispatch({ field: 'apiKey', value: apiKey });
+    const apiKeys = localStorage.getItem('apiKeys');
+    if (apiKeys) {
+      dispatch({ field: 'apiKeys', value: JSON.parse(apiKeys) });
     }
 
     const pluginKeys = localStorage.getItem('pluginKeys');
@@ -351,8 +345,6 @@ const Home = ({
   }, [
     defaultModelId,
     dispatch,
-    serverSideApiKeyIsSet,
-    serverSidePluginKeysSet,
   ]);
 
   return (
@@ -402,38 +394,3 @@ const Home = ({
   );
 };
 export default Home;
-
-export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
-  const defaultModelId =
-    (process.env.DEFAULT_MODEL &&
-      Object.values(OpenAIModelID).includes(
-        process.env.DEFAULT_MODEL as OpenAIModelID,
-      ) &&
-      process.env.DEFAULT_MODEL) ||
-    fallbackModelID;
-
-  let serverSidePluginKeysSet = false;
-
-  const googleApiKey = process.env.GOOGLE_API_KEY;
-  const googleCSEId = process.env.GOOGLE_CSE_ID;
-
-  if (googleApiKey && googleCSEId) {
-    serverSidePluginKeysSet = true;
-  }
-
-  return {
-    props: {
-      serverSideApiKeyIsSet: !!process.env.OPENAI_API_KEY,
-      defaultModelId,
-      serverSidePluginKeysSet,
-      ...(await serverSideTranslations(locale ?? 'en', [
-        'common',
-        'chat',
-        'sidebar',
-        'markdown',
-        'promptbar',
-        'settings',
-      ])),
-    },
-  };
-};

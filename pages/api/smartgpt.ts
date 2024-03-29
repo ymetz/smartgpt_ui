@@ -8,6 +8,7 @@ import wasm from '../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module
 
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json';
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init';
+import { Providers } from '@/types/plugin';
 
 export const config = {
   runtime: 'edge',
@@ -15,7 +16,7 @@ export const config = {
 
 const handler = async (req: Request): Promise<Response> => {
   try {
-    const { model, messages, key, prompt, temperature, options } = (await req.json()) as ChatBody;
+    const { model, messages, keys, prompt, temperature, options } = (await req.json()) as ChatBody;
 
     await init((imports) => WebAssembly.instantiate(wasm, imports));
     const encoding = new Tiktoken(
@@ -23,6 +24,8 @@ const handler = async (req: Request): Promise<Response> => {
       tiktokenModel.special_tokens,
       tiktokenModel.pat_str,
     );
+
+    const key = keys[Providers.OPENAI];
 
     const NUM_ASKS = Number(options?.find((op) => op.key == "SMART_GPT_NUM_ASKS")?.value || 3);
     const customAssistantPromptToUse = options?.find((op) => op.key == "SMARTGPT_ASSISTANT_PROMPT")?.value?.toString() || DEFAULT_ASSISTANT_PROMPT.toString();

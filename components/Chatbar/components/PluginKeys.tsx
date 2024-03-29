@@ -53,7 +53,7 @@ export const PluginKeys = () => {
   return (
     <>
       <SidebarButton
-        text={t('Additional API Keys')}
+        text={t('All API Keys')}
         icon={<IconKey size={18} />}
         onClick={() => setIsChanging(true)}
       />
@@ -80,7 +80,7 @@ export const PluginKeys = () => {
                 <div className="mt-6 rounded border p-4">
                   <div className="text-xl font-bold">Google Search Plugin</div>
                   <div className="mt-4 italic">
-                    Adding additional API Keys
+                    All API Keys
                   </div>
 
                   <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
