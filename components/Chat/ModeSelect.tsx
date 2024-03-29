@@ -39,9 +39,9 @@ export const ModeSelect: FC<Props> = ({
       <label className="mb-2 text-left text-neutral-700 dark:text-neutral-400">
         {label}
       </label>
-      <div className="flex flex-row justify-between items-center mt-2">
+      <div className="flex flex-row justify-center px-4 m-2">
         {FullPluginList.map((plugin) => (
-          <button onClick={handleChange} key={plugin.id} value={plugin.id} className={mode === plugin.id ? styleActiveButton : styleInactiveButton}>
+          <button onClick={handleChange} key={plugin.id} value={plugin.id} className={mode === plugin.id ? styleActiveButton : styleInactiveButton} style={{ marginInline: '0.5rem' }}>
             {plugin.name}
           </button>
           ))}

@@ -57,7 +57,7 @@ export const ChatbarSettings = () => {
       />
 
       {!serverSideApiKeyIsSet ? (
-        <Key apiKey={apiKey} onApiKeyChange={handleApiKeyChange} />
+        <Key modelName="OpenAI API Key" apiKey={apiKey} onApiKeyChange={handleApiKeyChange} />
       ) : null}
 
       {!serverSidePluginKeysSet ? <PluginKeys /> : null}

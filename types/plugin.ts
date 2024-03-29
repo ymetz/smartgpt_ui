@@ -28,16 +28,12 @@ export interface PluginKey {
 }
 
 export enum PluginID {
-  GOOGLE_SEARCH = 'google-search',
   SMART_GPT = 'smartgpt',
-  CONGRESS_GPT = 'congressgpt',
   //TREE_OF_THOUGHTs = 'tree-of-thoughts',
 }
 
 export enum PluginName {
-  GOOGLE_SEARCH = 'Google Search',
   SMART_GPT = 'SmartGPT',
-  CONGRESS_GPT = 'CongressGPT',
   //TREE_OF_THOUGHTs = 'Tree of Thoughts',
 }
 
@@ -71,25 +67,6 @@ export const Plugins: Record<PluginID, Plugin> = {
     type: DataType.STRING,
   }
   ]
-  },
-  [PluginID.GOOGLE_SEARCH]: {
-    id: PluginID.GOOGLE_SEARCH,
-    name: PluginName.GOOGLE_SEARCH,
-    requiredKeys: [
-      {
-        key: 'GOOGLE_API_KEY',
-        value: '',
-      },
-      {
-        key: 'GOOGLE_CSE_ID',
-        value: '',
-      },
-    ]
-  },
-  [PluginID.CONGRESS_GPT]: {
-    id: PluginID.CONGRESS_GPT,
-    name: PluginName.CONGRESS_GPT,
-    requiredKeys: [],
   },
   /*[PluginID.TREE_OF_THOUGHTs]: {
     id: PluginID.TREE_OF_THOUGHTs,

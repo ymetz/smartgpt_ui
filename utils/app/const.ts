@@ -17,6 +17,15 @@ export const DEFAULT_RESOLVER_PROMPT =
 export const OPENAI_API_HOST =
   process.env.OPENAI_API_HOST || 'https://api.openai.com';
 
+export const ANTHROPIC_API_HOST =
+  process.env.ANTHROPIC_API_HOST || 'https://api.anthropic.com';
+
+export const MISTRAL_API_HOST =
+  process.env.MISTRAL_API_HOST || 'https://api.mistral.ai/v1/chat/completions';
+
+export const GEMINI_API_HOST =
+  process.env.GEMINI_API_HOST || 'https://generativelanguage.googleapis.com/v1beta';
+
 export const DEFAULT_TEMPERATURE = 
   parseFloat(process.env.DEFAULT_TEMPERATURE || '0.9');
 
