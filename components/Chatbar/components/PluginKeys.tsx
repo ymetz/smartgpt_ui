@@ -82,141 +82,8 @@ export const PluginKeys = () => {
                   <div className="mt-4 italic">
                     All API Keys
                   </div>
-
-                  <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
-                    Google API Key
-                  </div>
-                  <input
-                    className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
-                    type="password"
-                    value={
-                      pluginKeys
-                        .find((p) => p.pluginId === PluginID.GOOGLE_SEARCH)
-                        ?.requiredKeys.find((k) => k.key === 'GOOGLE_API_KEY')
-                        ?.value
-                    }
-                    onChange={(e) => {
-                      const pluginKey = pluginKeys.find(
-                        (p) => p.pluginId === PluginID.GOOGLE_SEARCH,
-                      );
-
-                      if (pluginKey) {
-                        const requiredKey = pluginKey.requiredKeys.find(
-                          (k) => k.key === 'GOOGLE_API_KEY',
-                        );
-
-                        if (requiredKey) {
-                          const updatedPluginKey = {
-                            ...pluginKey,
-                            requiredKeys: pluginKey.requiredKeys.map((k) => {
-                              if (k.key === 'GOOGLE_API_KEY') {
-                                return {
-                                  ...k,
-                                  value: e.target.value,
-                                };
-                              }
-
-                              return k;
-                            }),
-                          };
-
-                          handlePluginKeyChange(updatedPluginKey);
-                        }
-                      } else {
-                        const newPluginKey: PluginKey = {
-                          pluginId: PluginID.GOOGLE_SEARCH,
-                          requiredKeys: [
-                            {
-                              key: 'GOOGLE_API_KEY',
-                              value: e.target.value,
-                            },
-                            {
-                              key: 'GOOGLE_CSE_ID',
-                              value: '',
-                            },
-                          ],
-                        };
-
-                        handlePluginKeyChange(newPluginKey);
-                      }
-                    }}
-                  />
-
-                  <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
-                    Google CSE ID
-                  </div>
-                  <input
-                    className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
-                    type="password"
-                    value={
-                      pluginKeys
-                        .find((p) => p.pluginId === PluginID.GOOGLE_SEARCH)
-                        ?.requiredKeys.find((k) => k.key === 'GOOGLE_CSE_ID')
-                        ?.value
-                    }
-                    onChange={(e) => {
-                      const pluginKey = pluginKeys.find(
-                        (p) => p.pluginId === PluginID.GOOGLE_SEARCH,
-                      );
-
-                      if (pluginKey) {
-                        const requiredKey = pluginKey.requiredKeys.find(
-                          (k) => k.key === 'GOOGLE_CSE_ID',
-                        );
-
-                        if (requiredKey) {
-                          const updatedPluginKey = {
-                            ...pluginKey,
-                            requiredKeys: pluginKey.requiredKeys.map((k) => {
-                              if (k.key === 'GOOGLE_CSE_ID') {
-                                return {
-                                  ...k,
-                                  value: e.target.value,
-                                };
-                              }
-
-                              return k;
-                            }),
-                          };
-
-                          handlePluginKeyChange(updatedPluginKey);
-                        }
-                      } else {
-                        const newPluginKey: PluginKey = {
-                          pluginId: PluginID.GOOGLE_SEARCH,
-                          requiredKeys: [
-                            {
-                              key: 'GOOGLE_API_KEY',
-                              value: '',
-                            },
-                            {
-                              key: 'GOOGLE_CSE_ID',
-                              value: e.target.value,
-                            },
-                          ],
-                        };
-
-                        handlePluginKeyChange(newPluginKey);
-                      }
-                    }}
-                  />
-
-                  <button
-                    className="mt-6 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow hover:bg-neutral-100 focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-300"
-                    onClick={() => {
-                      const pluginKey = pluginKeys.find(
-                        (p) => p.pluginId === PluginID.GOOGLE_SEARCH,
-                      );
-
-                      if (pluginKey) {
-                        handleClearPluginKey(pluginKey);
-                      }
-                    }}
-                  >
-                    Clear Google Search Plugin Keys
-                  </button>
                 </div>
-
+                
                 <button
                   type="button"
                   className="mt-6 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow hover:bg-neutral-100 focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-300"
@@ -224,7 +91,7 @@ export const PluginKeys = () => {
                 >
                   {t('Save')}
                 </button>
-              </div>
+               </div>
             </div>
           </div>
         </div>

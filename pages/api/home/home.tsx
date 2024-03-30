@@ -28,6 +28,7 @@ import { Conversation } from '@/types/chat';
 import { KeyValuePair } from '@/types/data';
 import { FolderInterface, FolderType } from '@/types/folder';
 import { OpenAIModelID, OpenAIModels, fallbackModelID } from '@/types/openai';
+import { AnthropicModelID, AnthropicModels } from '@/types/anthropic';
 import { Prompt } from '@/types/prompt';
 
 import { Chat } from '@/components/Chat/Chat';
@@ -42,12 +43,15 @@ import { v4 as uuidv4 } from 'uuid';
 import { atLeastOneApiKeySet } from '@/types/plugin';
 
 interface Props {
-  serverSidePluginKeysSet: boolean;
-  defaultModelId: OpenAIModelID;
+  defaultModelId: OpenAIModelID | AnthropicModelID;
 }
 
+const AllModels = {
+  ...OpenAIModels,
+  ...AnthropicModels,
+};
+
 const Home = ({
-  serverSidePluginKeysSet,
   defaultModelId,
 }: Props) => {
   const { t } = useTranslation('chat');
@@ -196,10 +200,10 @@ const Home = ({
       name: t('New Conversation'),
       messages: [],
       model: lastConversation?.model || {
-        id: OpenAIModels[defaultModelId].id,
-        name: OpenAIModels[defaultModelId].name,
-        maxLength: OpenAIModels[defaultModelId].maxLength,
-        tokenLimit: OpenAIModels[defaultModelId].tokenLimit,
+        id: AllModels[defaultModelId].id,
+        name: AllModels[defaultModelId].name,
+        maxLength: AllModels[defaultModelId].maxLength,
+        tokenLimit: AllModels[defaultModelId].tokenLimit,
       },
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
@@ -266,10 +270,7 @@ const Home = ({
     }
 
     const pluginKeys = localStorage.getItem('pluginKeys');
-    if (serverSidePluginKeysSet) {
-      dispatch({ field: 'pluginKeys', value: [] });
-      localStorage.removeItem('pluginKeys');
-    } else if (pluginKeys) {
+    if (pluginKeys) {
       dispatch({ field: 'pluginKeys', value: pluginKeys });
     }
 
@@ -334,7 +335,7 @@ const Home = ({
           id: uuidv4(),
           name: t('New Conversation'),
           messages: [],
-          model: OpenAIModels[defaultModelId],
+          model: AllModels[defaultModelId],
           prompt: DEFAULT_SYSTEM_PROMPT,
           promptMode: DEFAULT_PROMPT_MODE,
           temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
@@ -342,10 +343,7 @@ const Home = ({
         },
       });
     }
-  }, [
-    defaultModelId,
-    dispatch,
-  ]);
+  }, [defaultModelId, dispatch]);
 
   return (
     <HomeContext.Provider

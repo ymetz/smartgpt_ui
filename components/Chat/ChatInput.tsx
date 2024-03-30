@@ -298,8 +298,7 @@ export const ChatInput = ({
             onClick={() => setShowPluginSelect(!showPluginSelect)}
             onKeyDown={(e) => {}}
           >
-            {plugin ? 
-            (plugin?.id === PluginID.GOOGLE_SEARCH) ? <IconBrandGoogle size={20} /> : <IconBrain size={20} />
+            {plugin ? <IconBrain size={20} />
             :
             <IconBolt size={20} />}
           </button>

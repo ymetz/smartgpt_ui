@@ -156,7 +156,7 @@ export const AnthropicStream = async (
       'anthropic-version': '2023-06-01',
       'anthropic-beta': 'messages-2023-12-15',
       'X-API-Key': key ? key : process.env.ANTHROPIC_API_KEY,
-    },
+    } as HeadersInit,
     method: 'POST',
     body: JSON.stringify({
       model: model.id,
@@ -187,15 +187,18 @@ export const AnthropicStream = async (
     async start(controller) {
       const onParse = (event: ParsedEvent | ReconnectInterval) => {
         if (event.type === 'event') {
+          console.log(event);
           const data = event.data;
           try {
-            const text = JSON.parse(data).content;
-            if (text === '[DONE]') {
+            if (event.event === 'message_stop') {
               controller.close();
               return;
             }
-            const queue = encoder.encode(text);
-            controller.enqueue(queue);
+            if (event.event === 'content_block_delta') {
+              const text = JSON.parse(data).delta.text;
+              const queue = encoder.encode(text);
+              controller.enqueue(queue);
+            }
           } catch (e) {
             controller.error(e);
           }

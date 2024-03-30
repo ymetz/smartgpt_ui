@@ -3,6 +3,7 @@ import { ChatBody, Message } from './chat';
 export interface GoogleBody extends ChatBody {
   googleAPIKey: string;
   googleCSEId: string;
+  key: string;
 }
 
 export interface GoogleResponse {

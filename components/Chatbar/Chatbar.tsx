@@ -12,7 +12,8 @@ import { exportData, importData } from '@/utils/app/importExport';
 import { Conversation } from '@/types/chat';
 import { LatestExportFormat, SupportedExportFormats } from '@/types/export';
 import { OpenAIModels } from '@/types/openai';
-import { ApiKeys, PluginKey } from '@/types/plugin';
+import { AnthropicModels } from '@/types/anthropic';
+import { PluginKey } from '@/types/plugin';
 
 import HomeContext from '@/pages/api/home/home.context';
 
@@ -25,6 +26,8 @@ import ChatbarContext from './Chatbar.context';
 import { ChatbarInitialState, initialState } from './Chatbar.state';
 
 import { v4 as uuidv4 } from 'uuid';
+
+const AllModels = { ...OpenAIModels, ...AnthropicModels };
 
 export const Chatbar = () => {
   const { t } = useTranslation('sidebar');
@@ -48,14 +51,11 @@ export const Chatbar = () => {
 
   const handleApiKeyChange = useCallback(
     (provider: string, apiKey: string) => {
-      console.log('provider', provider, 'apiKey', apiKey);
-      const fieldName = provider as keyof ApiKeys;
-      homeDispatch({ field: 'apiKeys', value: { ...apiKeys, [fieldName]: apiKey } });
-
-      localStorage.setItem(fieldName, apiKey);
-    },
-    [homeDispatch, apiKeys],
-  );
+      homeDispatch({ field: 'apiKeys', value: { ...apiKeys, [provider]: apiKey } });
+      localStorage.setItem('apiKeys', JSON
+        .stringify({ ...apiKeys, [provider]: apiKey }));
+    }
+  , [homeDispatch]);
 
   const handlePluginKeyChange = (pluginKey: PluginKey) => {
     if (pluginKeys.some((key) => key.pluginId === pluginKey.pluginId)) {
@@ -164,7 +164,7 @@ export const Chatbar = () => {
             id: uuidv4(),
             name: t('New Conversation'),
             messages: [],
-            model: OpenAIModels[defaultModelId],
+            model: AllModels[defaultModelId],
             prompt: DEFAULT_SYSTEM_PROMPT,
             promptMode: DEFAULT_PROMPT_MODE,
             temperature: DEFAULT_TEMPERATURE,
@@ -208,7 +208,7 @@ export const Chatbar = () => {
         value: conversations,
       });
     }
-  }, [searchTerm, conversations, chatDispatch]);
+  }, [searchTerm, conversations]);
 
   return (
     <ChatbarContext.Provider

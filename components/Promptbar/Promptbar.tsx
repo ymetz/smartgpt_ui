@@ -6,6 +6,7 @@ import { useCreateReducer } from '@/hooks/useCreateReducer';
 import { savePrompts } from '@/utils/app/prompts';
 
 import { OpenAIModels } from '@/types/openai';
+import { AnthropicModels } from '@/types/anthropic';
 import { Prompt } from '@/types/prompt';
 
 import HomeContext from '@/pages/api/home/home.context';
@@ -19,6 +20,11 @@ import PromptbarContext from './PromptBar.context';
 import { PromptbarInitialState, initialState } from './Promptbar.state';
 
 import { v4 as uuidv4 } from 'uuid';
+
+const AllModels = {
+  ...OpenAIModels,
+  ...AnthropicModels,
+};
 
 const Promptbar = () => {
   const { t } = useTranslation('promptbar');
@@ -50,7 +56,7 @@ const Promptbar = () => {
         name: `Template ${prompts.length + 1}`,
         description: '',
         content: '',
-        model: OpenAIModels[defaultModelId],
+        model: AllModels[defaultModelId],
         folderId: null,
       };
 
