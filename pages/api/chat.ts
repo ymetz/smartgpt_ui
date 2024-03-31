@@ -55,8 +55,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     encoding.free();
 
-    console.log('model.id:', model.id);
-
     let stream: any;
     if (model.id.includes('gpt')) {
       const key = keys.openai;

@@ -19,7 +19,7 @@ export interface PluginOption {
 export enum DataType {
   STRING = 'string',
   NUMBER = 'number',
-  BOOLEAN = 'boolean',
+  BOOLEAN = 'boolean'
 }
 
 export enum Providers {
@@ -65,13 +65,19 @@ export const Plugins: Record<PluginID, Plugin> = {
       name: 'Number of Asks',
       value: DEFAULT_SMART_GPT_NUM_ASKS,
       type: DataType.NUMBER,
-    },
+  },
+  {
+    key: 'SMARTGPT_FOLLOWUP_MODEL',
+    name: 'Model for Research and Resolver',
+    value: '',
+    type: DataType.STRING,
+  },
   {
       key: 'SMARTGPT_ASSISTANT_PROMPT',
       name: 'Assistant Prompt',
       value: DEFAULT_ASSISTANT_PROMPT,
       type: DataType.STRING,
-    },
+  },
   {
     key: 'SMARTGPT_RESEARCHER_PROMPT',
     name: 'Researcher Prompt',

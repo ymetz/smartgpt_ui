@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 
+import { GetServerSideProps } from 'next';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
@@ -82,7 +83,7 @@ const Home = ({
   const { data, error, refetch } = useQuery(
     ['GetModels', apiKeys],
     ({ signal }) => {
-      if (!apiKeys || !atLeastOneApiKeySet(apiKeys)) return null;
+      if (!apiKeys || !atLeastOneApiKeySet(apiKeys)) return null;
       
       // Iterate through all the API keys and fetch the models, ignoring the ones that are not set
       const apiKeysEntries = Object.entries(apiKeys);
@@ -392,3 +393,27 @@ const Home = ({
   );
 };
 export default Home;
+
+export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
+  const defaultModelId =
+    (process.env.DEFAULT_MODEL &&
+      Object.keys(AllModels).includes(
+        process.env.DEFAULT_MODEL as OpenAIModelID | AnthropicModelID,
+      ) &&
+      process.env.DEFAULT_MODEL) ||
+    fallbackModelID;
+
+  return {
+    props: {
+      defaultModelId,
+      ...(await serverSideTranslations(locale ?? 'en', [
+        'common',
+        'chat',
+        'sidebar',
+        'markdown',
+        'promptbar',
+        'settings',
+      ])),
+    },
+  };
+};

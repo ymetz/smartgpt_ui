@@ -1,5 +1,6 @@
 import { DEFAULT_RESEARCHER_PROMPT, DEFAULT_ASSISTANT_PROMPT, DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE, DEFAULT_RESOLVER_PROMPT } from '@/utils/app/const';
 import { OpenAIError, OpenAIStream } from '@/utils/server';
+import { AnthropicError, AnthropicStream } from '@/utils/server';
 
 import { ChatBody, Message } from '@/types/chat';
 
@@ -18,6 +19,8 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { model, messages, keys, prompt, temperature, options } = (await req.json()) as ChatBody;
 
+    console.log("Request received: ", { model, messages, keys, prompt, temperature, options });
+
     await init((imports) => WebAssembly.instantiate(wasm, imports));
     const encoding = new Tiktoken(
       tiktokenModel.bpe_ranks,
@@ -25,7 +28,8 @@ const handler = async (req: Request): Promise<Response> => {
       tiktokenModel.pat_str,
     );
 
-    const key = keys[Providers.OPENAI];
+    const openAIkey = keys[Providers.OPENAI];
+    const anthropicKey = keys[Providers.ANTHROPIC];
 
     const NUM_ASKS = Number(options?.find((op) => op.key == "SMART_GPT_NUM_ASKS")?.value || 3);
     const customAssistantPromptToUse = options?.find((op) => op.key == "SMARTGPT_ASSISTANT_PROMPT")?.value?.toString() || DEFAULT_ASSISTANT_PROMPT.toString();
@@ -68,7 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     let requests = [];
     for (let i = 0; i < NUM_ASKS; i++) {
-        const stream = await OpenAIStream(model, promptToSend, temperatureToUse, key, messagesToSend);
+        const stream = await OpenAIStream(model, promptToSend, temperatureToUse, openAIkey, messagesToSend);
         requests.push(stream);
     }
 
@@ -109,7 +113,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const researcherMessagesToSend = [{ role: "user", content: researcherPrompt }, { role: "assistant", content: customAssistantPrompt }] as Message[];
 
-    const researcherRequest = await OpenAIStream(model, promptToSend, 0.5, key, researcherMessagesToSend);
+    const researcherRequest = await OpenAIStream(model, promptToSend, 0.5, openAIkey, researcherMessagesToSend);
 
     const researchReader = researcherRequest.getReader();
     let researcherResponse = '';
@@ -150,7 +154,7 @@ const handler = async (req: Request): Promise<Response> => {
         "### Final Output", "",
     ].join("\n");
 
-    const resultStream = await OpenAIStream(model, promptToSend, 0.3, key, resolverMessagesToSend, gptOutput);
+    const resultStream = await OpenAIStream(model, promptToSend, 0.3, openAIkey, resolverMessagesToSend, gptOutput);
 
     return new Response(resultStream);
 

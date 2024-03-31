@@ -1,3 +1,4 @@
+import { AnthropicModelID } from '@/types/anthropic';
 import { Conversation, Message } from '@/types/chat';
 import { ErrorMessage } from '@/types/error';
 import { FolderInterface } from '@/types/folder';
@@ -27,7 +28,7 @@ export interface HomeInitialState {
   currentFolder: FolderInterface | undefined;
   messageError: boolean;
   searchTerm: string;
-  defaultModelId: OpenAIModelID | undefined;
+  defaultModelId: OpenAIModelID | AnthropicModelID | undefined;
 }
 
 export const initialState: HomeInitialState = {

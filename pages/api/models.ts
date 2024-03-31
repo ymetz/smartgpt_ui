@@ -20,8 +20,9 @@ const handler = async (req: Request): Promise<Response> => {
     if (provider === 'openai') {
       // pass, handled below
     } else if (provider === 'anthropic') {
-      
-      console.log(Object.keys(AnthropicModels));
+      if (key === '') {
+        return new Response(JSON.stringify({}), { status: 200 });
+      }
       return new Response(
         JSON.stringify(
           Object.keys(AnthropicModels).map((key) => ({

@@ -1,4 +1,4 @@
-import { IconFileExport, IconSettings } from '@tabler/icons-react';
+import { IconFileExport, IconInfoCircle, IconQuestionMark, IconSettings } from '@tabler/icons-react';
 import { Provider, useContext, useState } from 'react';
 
 import { useTranslation } from 'next-i18next';
@@ -14,10 +14,12 @@ import ChatbarContext from '../Chatbar.context';
 import { ClearConversations } from './ClearConversations';
 import { PluginKeys } from './PluginKeys';
 import { Providers } from '@/types/plugin';
+import { Imprint } from '@/components/Imprint/Imprint';
 
 export const ChatbarSettings = () => {
   const { t } = useTranslation('sidebar');
   const [isSettingDialogOpen, setIsSettingDialog] = useState<boolean>(false);
+  const [isImprintDialogOpen, setIsImprintDialog] = useState<boolean>(false);
 
   const {
     state: {
@@ -62,7 +64,20 @@ export const ChatbarSettings = () => {
       </>
       }
 
-      <PluginKeys />
+      {/*<PluginKeys />*/}
+
+      <SidebarButton
+        text={t('Info & FAQ')}
+        icon={<IconInfoCircle size={18} />}
+        onClick={() => setIsImprintDialog(true)}
+      />
+
+      <Imprint
+        open={isImprintDialogOpen}
+        onClose={() => {
+          setIsImprintDialog(false);
+        }}
+      />
 
       <SettingDialog
         open={isSettingDialogOpen}

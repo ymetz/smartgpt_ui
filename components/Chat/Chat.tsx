@@ -157,7 +157,6 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
             const { value, done: doneReading } = await reader.read();
             done = doneReading;
             const chunkValue = decoder.decode(value);
-            console.log("VALUE", chunkValue);
             text += chunkValue;
             if (isFirst) {
               isFirst = false;
@@ -376,7 +375,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
       ) : (
         <>
           <div
-            className="max-h-full overflow-x-hidden"
+            className="max-h-[calc(100vh-120px)] overflow-x-hidden"
             ref={chatContainerRef}
             onScroll={handleScroll}
           >
@@ -419,17 +418,6 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                         }
                       />
 
-                      <CustomOptions
-                        label={t('Custom Method Options')}
-                        promptMode={selectedConversation?.promptMode || 'default'}
-                        onChangeOption={(options: PluginOption[]) =>
-                          handleUpdateConversation(selectedConversation, {
-                            key: 'options',
-                            value: options,
-                          })
-                        }
-                      />
-
                       <TemperatureSlider
                         label={t('Temperature')}
                         onChangeTemperature={(temperature) =>
@@ -439,7 +427,19 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                           })
                         }
                       />
-                      <div className="h-200"></div>
+
+                      { selectedConversation?.promptMode === 'smartgpt' && (
+                        <CustomOptions
+                          label={t('SmartGPT Options')}
+                          promptMode={selectedConversation?.promptMode || 'default'}
+                          onChangeOption={(options: PluginOption[]) =>
+                            handleUpdateConversation(selectedConversation, {
+                              key: 'options',
+                              value: options,
+                            })
+                          }
+                        />
+                      )}
                     </div>
                   )}
                 </div>
