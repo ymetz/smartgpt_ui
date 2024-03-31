@@ -15,7 +15,11 @@ import {
   cleanConversationHistory,
   cleanSelectedConversation,
 } from '@/utils/app/clean';
-import { DEFAULT_PROMPT_MODE, DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const';
+import {
+  DEFAULT_PROMPT_MODE,
+  DEFAULT_SYSTEM_PROMPT,
+  DEFAULT_TEMPERATURE,
+} from '@/utils/app/const';
 import {
   saveConversation,
   saveConversations,
@@ -25,11 +29,12 @@ import { saveFolders } from '@/utils/app/folders';
 import { savePrompts } from '@/utils/app/prompts';
 import { getSettings } from '@/utils/app/settings';
 
+import { AnthropicModelID, AnthropicModels } from '@/types/anthropic';
 import { Conversation } from '@/types/chat';
 import { KeyValuePair } from '@/types/data';
 import { FolderInterface, FolderType } from '@/types/folder';
 import { OpenAIModelID, OpenAIModels, fallbackModelID } from '@/types/openai';
-import { AnthropicModelID, AnthropicModels } from '@/types/anthropic';
+import { atLeastOneApiKeySet } from '@/types/plugin';
 import { Prompt } from '@/types/prompt';
 
 import { Chat } from '@/components/Chat/Chat';
@@ -41,7 +46,6 @@ import HomeContext from './home.context';
 import { HomeInitialState, initialState } from './home.state';
 
 import { v4 as uuidv4 } from 'uuid';
-import { atLeastOneApiKeySet } from '@/types/plugin';
 
 interface Props {
   defaultModelId: OpenAIModelID | AnthropicModelID;
@@ -52,9 +56,7 @@ const AllModels = {
   ...AnthropicModels,
 };
 
-const Home = ({
-  defaultModelId,
-}: Props) => {
+const Home = ({ defaultModelId }: Props) => {
   const { t } = useTranslation('chat');
   const { getModels } = useApiService();
   const { getModelsError } = useErrorService();
@@ -84,17 +86,16 @@ const Home = ({
     ['GetModels', apiKeys],
     ({ signal }) => {
       if (!apiKeys || !atLeastOneApiKeySet(apiKeys)) return null;
-      
+
       // Iterate through all the API keys and fetch the models, ignoring the ones that are not set
       const apiKeysEntries = Object.entries(apiKeys);
-      
+
       const promises = apiKeysEntries.map(([provider, apiKey]) => {
         if (!apiKey) return [];
-        return getModels({provider: provider, key: apiKey}, signal);
+        return getModels({ provider: provider, key: apiKey }, signal);
       });
 
       return Promise.all(promises);
-
     },
     { enabled: true, refetchOnMount: false },
   );

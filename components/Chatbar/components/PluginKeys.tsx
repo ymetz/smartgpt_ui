@@ -79,11 +79,9 @@ export const PluginKeys = () => {
 
                 <div className="mt-6 rounded border p-4">
                   <div className="text-xl font-bold">Google Search Plugin</div>
-                  <div className="mt-4 italic">
-                    All API Keys
-                  </div>
+                  <div className="mt-4 italic">All API Keys</div>
                 </div>
-                
+
                 <button
                   type="button"
                   className="mt-6 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow hover:bg-neutral-100 focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-300"
@@ -91,7 +89,7 @@ export const PluginKeys = () => {
                 >
                   {t('Save')}
                 </button>
-               </div>
+              </div>
             </div>
           </div>
         </div>

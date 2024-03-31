@@ -3,8 +3,8 @@ import { useContext } from 'react';
 
 import { useTranslation } from 'next-i18next';
 
-import { OpenAIModel } from '@/types/openai';
 import { AnthropicModel } from '@/types/anthropic';
+import { OpenAIModel } from '@/types/openai';
 
 import HomeContext from '@/pages/api/home/home.context';
 
@@ -21,9 +21,9 @@ export const ModelSelect = () => {
     selectedConversation &&
       handleUpdateConversation(selectedConversation, {
         key: 'model',
-        value: models.find(
-          (model) => model.id === e.target.value,
-        ) as OpenAIModel | AnthropicModel,
+        value: models.find((model) => model.id === e.target.value) as
+          | OpenAIModel
+          | AnthropicModel,
       });
   };
 

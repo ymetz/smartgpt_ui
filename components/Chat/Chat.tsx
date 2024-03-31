@@ -1,3 +1,4 @@
+import { Button } from '@nextui-org/react';
 import { IconClearAll, IconSettings } from '@tabler/icons-react';
 import {
   MutableRefObject,
@@ -11,8 +12,6 @@ import {
 import toast from 'react-hot-toast';
 
 import { useTranslation } from 'next-i18next';
-
-import {Button} from '@nextui-org/react'
 
 import { getEndpoint } from '@/utils/app/api';
 import {
@@ -30,13 +29,13 @@ import HomeContext from '@/pages/api/home/home.context';
 import Spinner from '../Spinner';
 import { ChatInput } from './ChatInput';
 import { ChatLoader } from './ChatLoader';
-import { ErrorMessageDiv } from './ErrorMessageDiv';
-import { ModelSelect } from './ModelSelect';
-import { ModeSelect } from './ModeSelect';
 import { CustomOptions } from './CustomOptions';
+import { ErrorMessageDiv } from './ErrorMessageDiv';
+import { MemoizedChatMessage } from './MemoizedChatMessage';
+import { ModeSelect } from './ModeSelect';
+import { ModelSelect } from './ModelSelect';
 import { SystemPrompt } from './SystemPrompt';
 import { TemperatureSlider } from './Temperature';
-import { MemoizedChatMessage } from './MemoizedChatMessage';
 
 interface Props {
   stopConversationRef: MutableRefObject<boolean>;
@@ -109,7 +108,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
         const endpoint = getEndpoint(plugin);
         let body;
         body = JSON.stringify({
-          ...chatBody
+          ...chatBody,
         });
         const controller = new AbortController();
         const response = await fetch(endpoint, {
@@ -241,7 +240,14 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
         }
       }
     },
-    [apiKeys, conversations, homeDispatch, pluginKeys, selectedConversation, stopConversationRef],
+    [
+      apiKeys,
+      conversations,
+      homeDispatch,
+      pluginKeys,
+      selectedConversation,
+      stopConversationRef,
+    ],
   );
 
   const scrollToBottom = useCallback(() => {
@@ -339,18 +345,19 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
 
   return (
     <div className="relative flex-1 overflow-hidden bg-white dark:bg-[#343541]">
-      {!apiKeys || !atLeastOneApiKeySet(apiKeys) ? (
+      {!apiKeys || !atLeastOneApiKeySet(apiKeys) ? (
         <div className="mx-auto flex h-full w-[300px] flex-col justify-center space-y-6 sm:w-[600px]">
           <div className="text-center text-4xl font-bold text-black dark:text-white">
-           &#129504; SmartGPT
+            &#129504; SmartGPT
           </div>
           <div className="text-center text-lg text-black dark:text-white">
             <div className="mb-8">{`SmartGPT: Improved reasoning .`}</div>
           </div>
           <div className="text-center text-gray-500 dark:text-gray-400">
             <div className="mb-2">
-              SmartGPT is an improved version of default GPT variants integrating different prompting
-              and in-context learning techniques.
+              SmartGPT is an improved version of default GPT variants
+              integrating different prompting and in-context learning
+              techniques.
             </div>
             <div className="mb-2">
               {t(
@@ -382,7 +389,6 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
             {selectedConversation?.messages.length === 0 ? (
               <>
                 <div className="mx-auto flex flex-col space-y-5 max-h-[95vh] md:space-y-10 px-3 mb-200 pt-5 md:pt-12 sm:max-w-[700px]">
-                  
                   <div className="text-center text-3xl font-semibold text-gray-800 dark:text-gray-100">
                     {models.length === 0 ? (
                       <div>
@@ -404,7 +410,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                           })
                         }
                       />
-                      
+
                       <ModelSelect />
 
                       <SystemPrompt
@@ -428,10 +434,12 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                         }
                       />
 
-                      { selectedConversation?.promptMode === 'smartgpt' && (
+                      {selectedConversation?.promptMode === 'smartgpt' && (
                         <CustomOptions
                           label={t('SmartGPT Options')}
-                          promptMode={selectedConversation?.promptMode || 'default'}
+                          promptMode={
+                            selectedConversation?.promptMode || 'default'
+                          }
                           onChangeOption={(options: PluginOption[]) =>
                             handleUpdateConversation(selectedConversation, {
                               key: 'options',
@@ -497,21 +505,21 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           </div>
 
           <ChatInput
-              stopConversationRef={stopConversationRef}
-              textareaRef={textareaRef}
-              onSend={(message, plugin) => {
-                setCurrentMessage(message);
-                handleSend(message, 0, plugin);
-              }}
-              onScrollDownClick={handleScrollDown}
-              onRegenerate={(plugin) => {
-                if (currentMessage) {
-                  handleSend(currentMessage, 2, plugin);
-                }
-              }}
-              promptMode={selectedConversation?.promptMode || 'default'}
-              showScrollDownButton={showScrollDownButton}
-            />
+            stopConversationRef={stopConversationRef}
+            textareaRef={textareaRef}
+            onSend={(message, plugin) => {
+              setCurrentMessage(message);
+              handleSend(message, 0, plugin);
+            }}
+            onScrollDownClick={handleScrollDown}
+            onRegenerate={(plugin) => {
+              if (currentMessage) {
+                handleSend(currentMessage, 2, plugin);
+              }
+            }}
+            promptMode={selectedConversation?.promptMode || 'default'}
+            showScrollDownButton={showScrollDownButton}
+          />
         </>
       )}
     </div>

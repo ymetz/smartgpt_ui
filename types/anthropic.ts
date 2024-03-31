@@ -8,7 +8,7 @@ export interface AnthropicModel {
 export enum AnthropicModelID {
   CALUDE_3_OPUS = 'claude-3-opus-20240229',
   CLAUDE_3_SONNET = 'claude-3-sonnet-20240229',
-  CLAUDE_3_HAIKU = 'claude-3-haiku-20240307'
+  CLAUDE_3_HAIKU = 'claude-3-haiku-20240307',
 }
 
 // in case the `DEFAULT_MODEL` environment variable is not set or set to an unsupported model
@@ -32,5 +32,5 @@ export const AnthropicModels: Record<AnthropicModelID, AnthropicModel> = {
     name: 'Claude 3 Haiku',
     maxLength: 200000,
     tokenLimit: 4096,
-  }
+  },
 };

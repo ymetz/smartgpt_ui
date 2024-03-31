@@ -1,6 +1,6 @@
-import { OpenAIModel } from './openai';
 import { AnthropicModel } from './anthropic';
-import { PluginOption, ApiKeys } from './plugin';
+import { OpenAIModel } from './openai';
+import { ApiKeys, PluginOption } from './plugin';
 
 export interface Message {
   role: Role;

@@ -4,15 +4,19 @@ import { useTranslation } from 'next-i18next';
 
 import { useCreateReducer } from '@/hooks/useCreateReducer';
 
-import { DEFAULT_PROMPT_MODE, DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const';
+import {
+  DEFAULT_PROMPT_MODE,
+  DEFAULT_SYSTEM_PROMPT,
+  DEFAULT_TEMPERATURE,
+} from '@/utils/app/const';
 import { saveConversation, saveConversations } from '@/utils/app/conversation';
 import { saveFolders } from '@/utils/app/folders';
 import { exportData, importData } from '@/utils/app/importExport';
 
+import { AnthropicModels } from '@/types/anthropic';
 import { Conversation } from '@/types/chat';
 import { LatestExportFormat, SupportedExportFormats } from '@/types/export';
 import { OpenAIModels } from '@/types/openai';
-import { AnthropicModels } from '@/types/anthropic';
 import { PluginKey } from '@/types/plugin';
 
 import HomeContext from '@/pages/api/home/home.context';
@@ -37,7 +41,14 @@ export const Chatbar = () => {
   });
 
   const {
-    state: { conversations, showChatbar, defaultModelId, folders, pluginKeys, apiKeys },
+    state: {
+      conversations,
+      showChatbar,
+      defaultModelId,
+      folders,
+      pluginKeys,
+      apiKeys,
+    },
     dispatch: homeDispatch,
     handleCreateFolder,
     handleNewConversation,
@@ -51,11 +62,17 @@ export const Chatbar = () => {
 
   const handleApiKeyChange = useCallback(
     (provider: string, apiKey: string) => {
-      homeDispatch({ field: 'apiKeys', value: { ...apiKeys, [provider]: apiKey } });
-      localStorage.setItem('apiKeys', JSON
-        .stringify({ ...apiKeys, [provider]: apiKey }));
-    }
-  , [homeDispatch]);
+      homeDispatch({
+        field: 'apiKeys',
+        value: { ...apiKeys, [provider]: apiKey },
+      });
+      localStorage.setItem(
+        'apiKeys',
+        JSON.stringify({ ...apiKeys, [provider]: apiKey }),
+      );
+    },
+    [homeDispatch],
+  );
 
   const handlePluginKeyChange = (pluginKey: PluginKey) => {
     if (pluginKeys.some((key) => key.pluginId === pluginKey.pluginId)) {
@@ -121,7 +138,7 @@ export const Chatbar = () => {
           id: uuidv4(),
           name: t('New Conversation'),
           messages: [],
-          model: OpenAIModels[defaultModelId],
+          model: AllModels[defaultModelId],
           prompt: DEFAULT_SYSTEM_PROMPT,
           temperature: DEFAULT_TEMPERATURE,
           promptMode: DEFAULT_PROMPT_MODE,

@@ -1,10 +1,18 @@
-import { IconFileExport, IconInfoCircle, IconQuestionMark, IconSettings } from '@tabler/icons-react';
+import {
+  IconFileExport,
+  IconInfoCircle,
+  IconQuestionMark,
+  IconSettings,
+} from '@tabler/icons-react';
 import { Provider, useContext, useState } from 'react';
 
 import { useTranslation } from 'next-i18next';
 
+import { Providers } from '@/types/plugin';
+
 import HomeContext from '@/pages/api/home/home.context';
 
+import { Imprint } from '@/components/Imprint/Imprint';
 import { SettingDialog } from '@/components/Settings/SettingDialog';
 
 import { Import } from '../../Settings/Import';
@@ -13,8 +21,6 @@ import { SidebarButton } from '../../Sidebar/SidebarButton';
 import ChatbarContext from '../Chatbar.context';
 import { ClearConversations } from './ClearConversations';
 import { PluginKeys } from './PluginKeys';
-import { Providers } from '@/types/plugin';
-import { Imprint } from '@/components/Imprint/Imprint';
 
 export const ChatbarSettings = () => {
   const { t } = useTranslation('sidebar');
@@ -22,11 +28,7 @@ export const ChatbarSettings = () => {
   const [isImprintDialogOpen, setIsImprintDialog] = useState<boolean>(false);
 
   const {
-    state: {
-      apiKeys,
-      lightMode,
-      conversations,
-    },
+    state: { apiKeys, lightMode, conversations },
     dispatch: homeDispatch,
   } = useContext(HomeContext);
 
@@ -57,12 +59,26 @@ export const ChatbarSettings = () => {
         onClick={() => setIsSettingDialog(true)}
       />
 
-      {apiKeys && 
-      <>
-      <Key modelName="OpenAI API Key" provider="openai" apiKey={apiKeys[Providers.OPENAI]} onApiKeyChange={(apiKey: string) => handleApiKeyChange(Providers.OPENAI, apiKey)} />
-      <Key modelName="Anthropic API Key" provider="anthropic" apiKey={apiKeys[Providers.ANTHROPIC] || ''} onApiKeyChange={(apiKey: string) => handleApiKeyChange(Providers.ANTHROPIC, apiKey)} /> 
-      </>
-      }
+      {apiKeys && (
+        <>
+          <Key
+            modelName="OpenAI API Key"
+            provider="openai"
+            apiKey={apiKeys[Providers.OPENAI]}
+            onApiKeyChange={(apiKey: string) =>
+              handleApiKeyChange(Providers.OPENAI, apiKey)
+            }
+          />
+          <Key
+            modelName="Anthropic API Key"
+            provider="anthropic"
+            apiKey={apiKeys[Providers.ANTHROPIC] || ''}
+            onApiKeyChange={(apiKey: string) =>
+              handleApiKeyChange(Providers.ANTHROPIC, apiKey)
+            }
+          />
+        </>
+      )}
 
       {/*<PluginKeys />*/}
 
