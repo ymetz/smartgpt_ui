@@ -1,10 +1,9 @@
+import { IconPlus } from '@tabler/icons-react';
 import { FC, KeyboardEvent, useEffect, useRef, useState } from 'react';
 
 import { useTranslation } from 'next-i18next';
 
 import { Prompt } from '@/types/prompt';
-
-import { IconPlus } from '@tabler/icons-react';
 
 interface Props {
   prompt: Prompt;
@@ -12,7 +11,11 @@ interface Props {
   onUpdatePrompt: (prompt: Prompt) => void;
 }
 
-export const SmartPromptModal: FC<Props> = ({ prompt, onClose, onUpdatePrompt }) => {
+export const SmartPromptModal: FC<Props> = ({
+  prompt,
+  onClose,
+  onUpdatePrompt,
+}) => {
   const { t } = useTranslation('promptbar');
   const [name, setName] = useState(prompt.name);
   const [description, setDescription] = useState(prompt.description);
@@ -98,106 +101,82 @@ export const SmartPromptModal: FC<Props> = ({ prompt, onClose, onUpdatePrompt })
             <textarea
               className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
               style={{ resize: 'none' }}
-              placeholder={
-                t(
-                  'System Prompt',
-                ) || ''
-              }
+              placeholder={t('System Prompt') || ''}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={4}
             />
 
             <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
-                    {t('Initial Prompts')}
+              {t('Initial Prompts')}
             </div>
             <div className="flex flex-row space-x-2 overflow-x-auto">
-                {[...Array(numInitialPrompts)].map((_, i) => (
-                    <textarea
-                        key={i}
-                        className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
-                        style={{ resize: 'none' }}
-                        placeholder={
-                            t(
-                                'Initial Prompt',
-                            ) || ''
-                        }
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        rows={4}
-                    />
-                ))}
+              {[...Array(numInitialPrompts)].map((_, i) => (
+                <textarea
+                  key={i}
+                  className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
+                  style={{ resize: 'none' }}
+                  placeholder={t('Initial Prompt') || ''}
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  rows={4}
+                />
+              ))}
             </div>
             <div className="flex gap-4 items-center">
-                <button
-                    type="button"
-                    className="w-10 px-4 py-2 mt-6 border rounded-lg shadow border-neutral-500 text-neutral-900 hover:bg-neutral-100 focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-300"
-                    onClick={() => {
-                        setNumInitialPrompts(numInitialPrompts + 1);
-                    }}
-                >
-                    <IconPlus size={18} />
-                </button>
+              <button
+                type="button"
+                className="w-10 px-4 py-2 mt-6 border rounded-lg shadow border-neutral-500 text-neutral-900 hover:bg-neutral-100 focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-300"
+                onClick={() => {
+                  setNumInitialPrompts(numInitialPrompts + 1);
+                }}
+              >
+                <IconPlus size={18} />
+              </button>
             </div>
             <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
-                    {t('Researcher Prompt')}
+              {t('Researcher Prompt')}
             </div>
             <textarea
-                className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
-                style={{ resize: 'none' }}
-                placeholder={
-                    t(
-                    'Researcher Prompt',
-                    ) || ''
-                }
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={4}
+              className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
+              style={{ resize: 'none' }}
+              placeholder={t('Researcher Prompt') || ''}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={4}
             />
             <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
-                    {t('Researcher Output')}
+              {t('Researcher Output')}
             </div>
             <textarea
-                className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
-                style={{ resize: 'none' }}
-                placeholder={
-                    t(
-                    'Researcher Output',
-                    ) || ''
-                }
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={4}
+              className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
+              style={{ resize: 'none' }}
+              placeholder={t('Researcher Output') || ''}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={4}
             />
             <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
-                    {t('Resolver Prompt')}
+              {t('Resolver Prompt')}
             </div>
             <textarea
-                className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
-                style={{ resize: 'none' }}
-                placeholder={
-                    t(
-                    'Resolver Prompt',
-                    ) || ''
-                }
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={4}
+              className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
+              style={{ resize: 'none' }}
+              placeholder={t('Resolver Prompt') || ''}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={4}
             />
             <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
-                    {t('Resolver Output')}
+              {t('Resolver Output')}
             </div>
             <textarea
-                className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
-                style={{ resize: 'none' }}
-                placeholder={
-                    t(
-                    'Resolver Output',
-                    ) || ''
-                }
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={4}
+              className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
+              style={{ resize: 'none' }}
+              placeholder={t('Resolver Output') || ''}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={4}
             />
             <button
               type="button"

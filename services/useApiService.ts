@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { useFetch } from '@/hooks/useFetch';
 
 export interface GetModelsRequestProps {
+  provider?: string; // 'openai' | 'anthropic' | 'mistral' | 'gemini'
   key: string;
 }
 
@@ -28,7 +29,7 @@ const useApiService = () => {
   const getModels = useCallback(
     (params: GetModelsRequestProps, signal?: AbortSignal) => {
       return fetchService.post<GetModelsRequestProps>(`/api/models`, {
-        body: { key: params.key },
+        body: { provider: params.provider, key: params.key },
         headers: {
           'Content-Type': 'application/json',
         },

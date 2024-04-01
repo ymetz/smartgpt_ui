@@ -15,7 +15,11 @@ import {
   cleanConversationHistory,
   cleanSelectedConversation,
 } from '@/utils/app/clean';
-import { DEFAULT_PROMPT_MODE, DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const';
+import {
+  DEFAULT_PROMPT_MODE,
+  DEFAULT_SYSTEM_PROMPT,
+  DEFAULT_TEMPERATURE,
+} from '@/utils/app/const';
 import {
   saveConversation,
   saveConversations,
@@ -25,10 +29,12 @@ import { saveFolders } from '@/utils/app/folders';
 import { savePrompts } from '@/utils/app/prompts';
 import { getSettings } from '@/utils/app/settings';
 
+import { AnthropicModelID, AnthropicModels } from '@/types/anthropic';
 import { Conversation } from '@/types/chat';
 import { KeyValuePair } from '@/types/data';
 import { FolderInterface, FolderType } from '@/types/folder';
 import { OpenAIModelID, OpenAIModels, fallbackModelID } from '@/types/openai';
+import { atLeastOneApiKeySet } from '@/types/plugin';
 import { Prompt } from '@/types/prompt';
 
 import { Chat } from '@/components/Chat/Chat';
@@ -42,16 +48,15 @@ import { HomeInitialState, initialState } from './home.state';
 import { v4 as uuidv4 } from 'uuid';
 
 interface Props {
-  serverSideApiKeyIsSet: boolean;
-  serverSidePluginKeysSet: boolean;
-  defaultModelId: OpenAIModelID;
+  defaultModelId: OpenAIModelID | AnthropicModelID;
 }
 
-const Home = ({
-  serverSideApiKeyIsSet,
-  serverSidePluginKeysSet,
-  defaultModelId,
-}: Props) => {
+const AllModels = {
+  ...OpenAIModels,
+  ...AnthropicModels,
+};
+
+const Home = ({ defaultModelId }: Props) => {
   const { t } = useTranslation('chat');
   const { getModels } = useApiService();
   const { getModelsError } = useErrorService();
@@ -63,7 +68,7 @@ const Home = ({
 
   const {
     state: {
-      apiKey,
+      apiKeys,
       lightMode,
       folders,
       conversations,
@@ -78,27 +83,37 @@ const Home = ({
   const stopConversationRef = useRef<boolean>(false);
 
   const { data, error, refetch } = useQuery(
-    ['GetModels', apiKey, serverSideApiKeyIsSet],
+    ['GetModels', apiKeys],
     ({ signal }) => {
-      if (!apiKey && !serverSideApiKeyIsSet) return null;
+      if (!apiKeys || !atLeastOneApiKeySet(apiKeys)) return null;
 
-      return getModels(
-        {
-          key: apiKey,
-        },
-        signal,
-      );
+      // Iterate through all the API keys and fetch the models, ignoring the ones that are not set
+      const apiKeysEntries = Object.entries(apiKeys);
+
+      const promises = apiKeysEntries.map(([provider, apiKey]) => {
+        if (!apiKey) return [];
+        return getModels({ provider: provider, key: apiKey }, signal);
+      });
+
+      return Promise.all(promises);
     },
     { enabled: true, refetchOnMount: false },
   );
 
-  useEffect(() => {
+  /*useEffect(() => {
     if (data) dispatch({ field: 'models', value: data });
   }, [data, dispatch]);
 
   useEffect(() => {
     dispatch({ field: 'modelError', value: getModelsError(error) });
-  }, [dispatch, error, getModelsError]);
+  }, [dispatch, error, getModelsError]);*/
+
+  useEffect(() => {
+    // check if all the models are fetched
+    if (data && data.every((d) => d)) {
+      dispatch({ field: 'models', value: data.flat() });
+    }
+  }, [data, dispatch]);
 
   // FETCH MODELS ----------------------------------------------
 
@@ -187,10 +202,10 @@ const Home = ({
       name: t('New Conversation'),
       messages: [],
       model: lastConversation?.model || {
-        id: OpenAIModels[defaultModelId].id,
-        name: OpenAIModels[defaultModelId].name,
-        maxLength: OpenAIModels[defaultModelId].maxLength,
-        tokenLimit: OpenAIModels[defaultModelId].tokenLimit,
+        id: AllModels[defaultModelId].id,
+        name: AllModels[defaultModelId].name,
+        maxLength: AllModels[defaultModelId].maxLength,
+        tokenLimit: AllModels[defaultModelId].tokenLimit,
       },
       prompt: DEFAULT_SYSTEM_PROMPT,
       temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
@@ -238,17 +253,7 @@ const Home = ({
   useEffect(() => {
     defaultModelId &&
       dispatch({ field: 'defaultModelId', value: defaultModelId });
-    serverSideApiKeyIsSet &&
-      dispatch({
-        field: 'serverSideApiKeyIsSet',
-        value: serverSideApiKeyIsSet,
-      });
-    serverSidePluginKeysSet &&
-      dispatch({
-        field: 'serverSidePluginKeysSet',
-        value: serverSidePluginKeysSet,
-      });
-  }, [defaultModelId, serverSideApiKeyIsSet, serverSidePluginKeysSet]);
+  }, [defaultModelId]);
 
   // ON LOAD --------------------------------------------
 
@@ -261,21 +266,13 @@ const Home = ({
       });
     }
 
-    const apiKey = localStorage.getItem('apiKey');
-
-    if (serverSideApiKeyIsSet) {
-      dispatch({ field: 'apiKey', value: '' });
-
-      localStorage.removeItem('apiKey');
-    } else if (apiKey) {
-      dispatch({ field: 'apiKey', value: apiKey });
+    const apiKeys = localStorage.getItem('apiKeys');
+    if (apiKeys) {
+      dispatch({ field: 'apiKeys', value: JSON.parse(apiKeys) });
     }
 
     const pluginKeys = localStorage.getItem('pluginKeys');
-    if (serverSidePluginKeysSet) {
-      dispatch({ field: 'pluginKeys', value: [] });
-      localStorage.removeItem('pluginKeys');
-    } else if (pluginKeys) {
+    if (pluginKeys) {
       dispatch({ field: 'pluginKeys', value: pluginKeys });
     }
 
@@ -340,7 +337,7 @@ const Home = ({
           id: uuidv4(),
           name: t('New Conversation'),
           messages: [],
-          model: OpenAIModels[defaultModelId],
+          model: AllModels[defaultModelId],
           prompt: DEFAULT_SYSTEM_PROMPT,
           promptMode: DEFAULT_PROMPT_MODE,
           temperature: lastConversation?.temperature ?? DEFAULT_TEMPERATURE,
@@ -348,12 +345,7 @@ const Home = ({
         },
       });
     }
-  }, [
-    defaultModelId,
-    dispatch,
-    serverSideApiKeyIsSet,
-    serverSidePluginKeysSet,
-  ]);
+  }, [defaultModelId, dispatch]);
 
   return (
     <HomeContext.Provider
@@ -406,26 +398,15 @@ export default Home;
 export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
   const defaultModelId =
     (process.env.DEFAULT_MODEL &&
-      Object.values(OpenAIModelID).includes(
-        process.env.DEFAULT_MODEL as OpenAIModelID,
+      Object.keys(AllModels).includes(
+        process.env.DEFAULT_MODEL as OpenAIModelID | AnthropicModelID,
       ) &&
       process.env.DEFAULT_MODEL) ||
     fallbackModelID;
 
-  let serverSidePluginKeysSet = false;
-
-  const googleApiKey = process.env.GOOGLE_API_KEY;
-  const googleCSEId = process.env.GOOGLE_CSE_ID;
-
-  if (googleApiKey && googleCSEId) {
-    serverSidePluginKeysSet = true;
-  }
-
   return {
     props: {
-      serverSideApiKeyIsSet: !!process.env.OPENAI_API_KEY,
       defaultModelId,
-      serverSidePluginKeysSet,
       ...(await serverSideTranslations(locale ?? 'en', [
         'common',
         'chat',

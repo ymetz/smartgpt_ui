@@ -13,13 +13,12 @@ interface Props {
   onChangeMode: (promptMode: string) => void;
 }
 
-const styleActiveButton = 'px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75';
-const styleInactiveButton = 'px-4 py-2 rounded-md text-sm font-medium text-blue-500 bg-gray-800 hover:bg-black-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75';
+const styleActiveButton =
+  'px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75';
+const styleInactiveButton =
+  'px-4 py-2 rounded-md text-sm font-medium text-blue-500 bg-gray-800 hover:bg-black-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75';
 
-export const ModeSelect: FC<Props> = ({
-  label,
-  onChangeMode,
-}) => {
+export const ModeSelect: FC<Props> = ({ label, onChangeMode }) => {
   const {
     state: { conversations },
   } = useContext(HomeContext);
@@ -39,13 +38,21 @@ export const ModeSelect: FC<Props> = ({
       <label className="mb-2 text-left text-neutral-700 dark:text-neutral-400">
         {label}
       </label>
-      <div className="flex flex-row justify-between items-center mt-2">
+      <div className="flex flex-row justify-center px-4 m-2">
         {FullPluginList.map((plugin) => (
-          <button onClick={handleChange} key={plugin.id} value={plugin.id} className={mode === plugin.id ? styleActiveButton : styleInactiveButton}>
+          <button
+            onClick={handleChange}
+            key={plugin.id}
+            value={plugin.id}
+            className={
+              mode === plugin.id ? styleActiveButton : styleInactiveButton
+            }
+            style={{ marginInline: '0.5rem' }}
+          >
             {plugin.name}
           </button>
-          ))}
-        </div>
+        ))}
+      </div>
     </div>
   );
 };

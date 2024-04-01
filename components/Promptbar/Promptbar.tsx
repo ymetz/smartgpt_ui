@@ -5,6 +5,7 @@ import { useCreateReducer } from '@/hooks/useCreateReducer';
 
 import { savePrompts } from '@/utils/app/prompts';
 
+import { AnthropicModels } from '@/types/anthropic';
 import { OpenAIModels } from '@/types/openai';
 import { Prompt } from '@/types/prompt';
 
@@ -19,6 +20,11 @@ import PromptbarContext from './PromptBar.context';
 import { PromptbarInitialState, initialState } from './Promptbar.state';
 
 import { v4 as uuidv4 } from 'uuid';
+
+const AllModels = {
+  ...OpenAIModels,
+  ...AnthropicModels,
+};
 
 const Promptbar = () => {
   const { t } = useTranslation('promptbar');
@@ -50,7 +56,7 @@ const Promptbar = () => {
         name: `Template ${prompts.length + 1}`,
         description: '',
         content: '',
-        model: OpenAIModels[defaultModelId],
+        model: AllModels[defaultModelId],
         folderId: null,
       };
 
@@ -84,15 +90,15 @@ const Promptbar = () => {
 
   const InfoText = () => {
     return (
-            <div className="flex flex-col justify-between h-fit mt-10">
-              <div className="flex flex-col">
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  {t('Add templates for prompt modes here')}
-                </p>
-              </div>
-          </div>
+      <div className="flex flex-col justify-between h-fit mt-10">
+        <div className="flex flex-col">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            {t('Add templates for prompt modes here')}
+          </p>
+        </div>
+      </div>
     );
-  }
+  };
 
   const handleDrop = (e: any) => {
     if (e.dataTransfer) {
@@ -156,7 +162,7 @@ const Promptbar = () => {
         handleCreateItem={handleCreatePrompt}
         handleCreateFolder={() => handleCreateFolder(t('New folder'), 'prompt')}
         handleDrop={handleDrop}
-        footerComponent={<InfoText/>}
+        footerComponent={<InfoText />}
       />
     </PromptbarContext.Provider>
   );

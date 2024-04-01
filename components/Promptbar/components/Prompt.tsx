@@ -14,12 +14,13 @@ import {
 
 import { Prompt } from '@/types/prompt';
 
+import HomeContext from '@/pages/api/home/home.context';
+
 import SidebarActionButton from '@/components/Buttons/SidebarActionButton';
 
 import PromptbarContext from '../PromptBar.context';
 import { PromptModal } from './PromptModal';
 import { SmartPromptModal } from './SmartPromptModal';
-import HomeContext from '@/pages/api/home/home.context';
 
 interface Props {
   prompt: Prompt;
@@ -121,22 +122,20 @@ export const PromptComponent = ({ prompt }: Props) => {
         </div>
       )}
 
-      {showModal && (
-        promptMode === 'smartgpt' ? (
-        <SmartPromptModal
-          prompt={prompt}
-          onClose={() => setShowModal(false)}
-          onUpdatePrompt={handleUpdate}
-        />
-      ) :
-      (
-        <PromptModal
-          prompt={prompt}
-          onClose={() => setShowModal(false)}
-          onUpdatePrompt={handleUpdate}
-        />
-      )
-      )}
+      {showModal &&
+        (promptMode === 'smartgpt' ? (
+          <SmartPromptModal
+            prompt={prompt}
+            onClose={() => setShowModal(false)}
+            onUpdatePrompt={handleUpdate}
+          />
+        ) : (
+          <PromptModal
+            prompt={prompt}
+            onClose={() => setShowModal(false)}
+            onUpdatePrompt={handleUpdate}
+          />
+        ))}
     </div>
   );
 };

@@ -1,7 +1,17 @@
-import { DEFAULT_RESEARCHER_PROMPT, DEFAULT_ASSISTANT_PROMPT, DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE, DEFAULT_RESOLVER_PROMPT } from '@/utils/app/const';
+import {
+  DEFAULT_ASSISTANT_PROMPT,
+  DEFAULT_RESEARCHER_PROMPT,
+  DEFAULT_RESOLVER_PROMPT,
+  DEFAULT_SYSTEM_PROMPT,
+  DEFAULT_TEMPERATURE,
+} from '@/utils/app/const';
 import { OpenAIError, OpenAIStream } from '@/utils/server';
+import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai';
+import { AnthropicError, AnthropicStream } from '@/utils/server';
+import { AnthropicModel, AnthropicModelID, AnthropicModels } from '@/types/anthropic';
 
 import { ChatBody, Message } from '@/types/chat';
+import { Providers } from '@/types/plugin';
 
 // @ts-expect-error
 import wasm from '../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module';
@@ -13,9 +23,12 @@ export const config = {
   runtime: 'edge',
 };
 
+const AllModels = { ...OpenAIModels, ...AnthropicModels };
+
 const handler = async (req: Request): Promise<Response> => {
   try {
-    const { model, messages, key, prompt, temperature, options } = (await req.json()) as ChatBody;
+    const { model, messages, keys, prompt, temperature, options } =
+      (await req.json()) as ChatBody;
 
     await init((imports) => WebAssembly.instantiate(wasm, imports));
     const encoding = new Tiktoken(
@@ -24,10 +37,31 @@ const handler = async (req: Request): Promise<Response> => {
       tiktokenModel.pat_str,
     );
 
-    const NUM_ASKS = Number(options?.find((op) => op.key == "SMART_GPT_NUM_ASKS")?.value || 3);
-    const customAssistantPromptToUse = options?.find((op) => op.key == "SMARTGPT_ASSISTANT_PROMPT")?.value?.toString() || DEFAULT_ASSISTANT_PROMPT.toString();
-    const customResearcherPrompt = options?.find((op) => op.key == "SMARTGPT_RESEARCHER_PROMPT")?.value.toString() || DEFAULT_RESEARCHER_PROMPT;
-    const customResolverPrompt = options?.find((op) => op.key == "SMARTGPT_RESOLVER_PROMPT")?.value.toString() || DEFAULT_RESOLVER_PROMPT;
+    const openAIkey = keys[Providers.OPENAI];
+    const anthropicKey = keys[Providers.ANTHROPIC];
+
+    const NUM_ASKS = Number(
+      options?.find((op) => op.key == 'SMART_GPT_NUM_ASKS')?.value || 3,
+    );
+    const customAssistantPromptToUse =
+      options
+        ?.find((op) => op.key == 'SMARTGPT_ASSISTANT_PROMPT')
+        ?.value?.toString() || DEFAULT_ASSISTANT_PROMPT.toString();
+    const customResearcherPrompt =
+      options
+        ?.find((op) => op.key == 'SMARTGPT_RESEARCHER_PROMPT')
+        ?.value.toString() || DEFAULT_RESEARCHER_PROMPT;
+    const customResolverPrompt =
+      options
+        ?.find((op) => op.key == 'SMARTGPT_RESOLVER_PROMPT')
+        ?.value.toString() || DEFAULT_RESOLVER_PROMPT;
+    let followUpModelId = options?.find((op) => op.key == 'SMARTGPT_FOLLOWUP_MODEL')?.value as string;
+    let followUpModel: OpenAIModel | AnthropicModel;
+    if (!followUpModelId || followUpModelId === '') {
+        followUpModel = model;
+    } else {
+        followUpModel = AllModels[followUpModelId as OpenAIModelID | AnthropicModelID] as OpenAIModel | AnthropicModel;
+        }
 
     let promptToSend = prompt;
     if (!promptToSend) {
@@ -61,104 +95,167 @@ const handler = async (req: Request): Promise<Response> => {
     encoding.free();
 
     const customAssistantPrompt = customAssistantPromptToUse; //Might degrade performance.
-    messagesToSend.push({ role: "assistant", content: customAssistantPrompt });
-    
+    messagesToSend.push({ role: 'assistant', content: customAssistantPrompt });
+
     let requests = [];
+    let stream: any;
     for (let i = 0; i < NUM_ASKS; i++) {
-        const stream = await OpenAIStream(model, promptToSend, temperatureToUse, key, messagesToSend);
+      if (model.id.includes('gpt')) {
+        stream = await OpenAIStream(
+            model,
+            promptToSend,
+            temperatureToUse,
+            openAIkey,
+            messagesToSend,
+        );
         requests.push(stream);
+      } else if (model.id.includes('claude')) {
+        stream = await AnthropicStream(
+            model,
+            promptToSend,
+            temperatureToUse,
+            anthropicKey,
+            messagesToSend,
+        );
+        requests.push(stream);
+      }
     }
 
     //wait for readablestream to finish
-    const responses = await Promise.allSettled(requests.map(async (stream) => {
+    const responses = await Promise.allSettled(
+      requests.map(async (stream) => {
         const reader = stream.getReader();
         let result = '';
         while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            result += new TextDecoder().decode(value);
+          const { done, value } = await reader.read();
+          if (done) break;
+          result += new TextDecoder().decode(value);
         }
         return result;
-    }));
+      }),
+    );
 
-    if (responses.some(r => r.status === 'rejected')) {
-        console.error('One or more requests failed');
+    if (responses.some((r) => r.status === 'rejected')) {
+      console.error('One or more requests failed');
     }
 
-    const initialResponses = responses.filter(r => r.status === 'fulfilled').map(r => {
+    const initialResponses = responses
+      .filter((r) => r.status === 'fulfilled')
+      .map((r) => {
         if (r.status === 'fulfilled') {
-            return r.value as string;
+          return r.value as string;
         }
         return '';
-    });
+      });
     const initialGptAnswers = initialResponses;
 
     // Function to substitute the num_asks in a custom provided dynamic researcher prompt.
     const substituteNumAsks = (prompt: string) => {
-        const regex = /NUM_ASKS/gi;
-        return prompt.replace(regex, NUM_ASKS.toString());
-    }
+      const regex = /NUM_ASKS/gi;
+      return prompt.replace(regex, NUM_ASKS.toString());
+    };
 
     // RESEARCHER PHASE *****************
-    const researcherPrompt = initialResponses.reduce((acc, currentResponse, idx) => {
-        return acc + `Answer Option ${idx+1}: ${currentResponse} \n\n`;
-    }, substituteNumAsks(customResearcherPrompt + `\n`));
+    const researcherPrompt = initialResponses.reduce(
+      (acc, currentResponse, idx) => {
+        return acc + `Answer Option ${idx + 1}: ${currentResponse} \n\n`;
+      },
+      substituteNumAsks(customResearcherPrompt + `\n`),
+    );
 
-    const researcherMessagesToSend = [{ role: "user", content: researcherPrompt }, { role: "assistant", content: customAssistantPrompt }] as Message[];
+    const researcherMessagesToSend = [
+      { role: 'user', content: researcherPrompt },
+      { role: 'assistant', content: customAssistantPrompt },
+    ] as Message[];
 
-    const researcherRequest = await OpenAIStream(model, promptToSend, 0.5, key, researcherMessagesToSend);
-
+    let researcherRequest: any;
+    console.log("FOLLOWUP MODEL ID: ", followUpModel?.id);
+    if (followUpModel?.id.includes('claude')) {
+        researcherRequest = await AnthropicStream(
+            followUpModel,
+            researcherPrompt,
+            1,
+            anthropicKey,
+            researcherMessagesToSend,
+        );
+    }
+    else {
+        researcherRequest = await OpenAIStream(
+            followUpModel,
+            researcherPrompt,
+            1,
+            openAIkey,
+            researcherMessagesToSend,
+        );
+    }
+    
     const researchReader = researcherRequest.getReader();
     let researcherResponse = '';
     while (true) {
-        const { done, value } = await researchReader.read();
-        if (done) break;
-        researcherResponse += new TextDecoder().decode(value);
+      const { done, value } = await researchReader.read();
+      if (done) break;
+      researcherResponse += new TextDecoder().decode(value);
     }
 
     //Removed this Original Prompt: ${prompt}
-    const resolverPrompt = substituteNumAsks(customResolverPrompt) +
-    `Researcher's findings: ${researcherResponse}
+    const resolverPrompt =
+      substituteNumAsks(customResolverPrompt) +
+      `Researcher's findings: ${researcherResponse}
     Answer Options: ${initialResponses.join(', ')} `;
 
-    const resolverMessagesToSend = [{ role: "user", content: resolverPrompt }, { role: "assistant", content: customAssistantPrompt }] as Message[];
+    const resolverMessagesToSend = [
+      { role: 'user', content: resolverPrompt },
+      { role: 'assistant', content: customAssistantPrompt },
+    ] as Message[];
 
-    
     const initialGptAnswersFormatted = initialGptAnswers.map((answer, idx) => {
-        // Format as markdown list items, with color coding.
-        return '#### Answer Option' + (idx+1) + ':\n' + answer + '\n';
+      // Format as markdown list items, with color coding.
+      return '#### Answer Option' + (idx + 1) + ':\n' + answer + '\n';
     });
-    
+
     // Nicely formatt the output via markdown as a concatenated string.
     const gptOutput = [
-        "### Prompt",
-        "", prompt, "",
-        "### Initial GPT Answers",
-        '<details>\n\n',
-        '<summary>Click to expand</summary>\n\n',
-        "", initialGptAnswersFormatted.join('\n'), "\n",
-        '</details>\n',
-        //"### Researcher Prompt",
-        //"", researcherPrompt, "",
-        "### Researcher Response",
-        "", researcherResponse, "",
-        //"### Resolver Prompt",
-        //"", resolverPrompt, "",
-        "### Final Output", "",
-    ].join("\n");
+      '### Prompt',
+      '',
+      prompt,
+      '',
+      '### Initial GPT Answers',
+      '<details>\n\n',
+      '<summary>Click to expand</summary>\n\n',
+      '',
+      initialGptAnswersFormatted.join('\n'),
+      '\n',
+      '</details>\n',
+      //"### Researcher Prompt",
+      //"", researcherPrompt, "",
+      '### Researcher Response',
+      '',
+      researcherResponse,
+      '',
+      //"### Resolver Prompt",
+      //"", resolverPrompt, "",
+      '### Final Output',
+      '',
+    ].join('\n');
 
-    const resultStream = await OpenAIStream(model, promptToSend, 0.3, key, resolverMessagesToSend, gptOutput);
+    const resultStream = await OpenAIStream(
+      model,
+      promptToSend,
+      0.3,
+      openAIkey,
+      resolverMessagesToSend,
+      gptOutput,
+    );
 
     return new Response(resultStream);
-
   } catch (error) {
-        console.error(error);
-        if (error instanceof OpenAIError) {
-        return new Response('Error', { status: 500, statusText: error.message });
-        } else {
-        return new Response('Error', { status: 500 });
-        }
+    console.error(error);
+    if (error instanceof OpenAIError) {
+      return new Response('Error', { status: 500, statusText: error.message });
+    } else {
+      return new Response('Error', { status: 500 });
     }
+  }
 };
 
 export default handler;

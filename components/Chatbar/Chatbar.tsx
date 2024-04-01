@@ -4,11 +4,16 @@ import { useTranslation } from 'next-i18next';
 
 import { useCreateReducer } from '@/hooks/useCreateReducer';
 
-import { DEFAULT_PROMPT_MODE, DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const';
+import {
+  DEFAULT_PROMPT_MODE,
+  DEFAULT_SYSTEM_PROMPT,
+  DEFAULT_TEMPERATURE,
+} from '@/utils/app/const';
 import { saveConversation, saveConversations } from '@/utils/app/conversation';
 import { saveFolders } from '@/utils/app/folders';
 import { exportData, importData } from '@/utils/app/importExport';
 
+import { AnthropicModels } from '@/types/anthropic';
 import { Conversation } from '@/types/chat';
 import { LatestExportFormat, SupportedExportFormats } from '@/types/export';
 import { OpenAIModels } from '@/types/openai';
@@ -26,6 +31,8 @@ import { ChatbarInitialState, initialState } from './Chatbar.state';
 
 import { v4 as uuidv4 } from 'uuid';
 
+const AllModels = { ...OpenAIModels, ...AnthropicModels };
+
 export const Chatbar = () => {
   const { t } = useTranslation('sidebar');
 
@@ -34,7 +41,14 @@ export const Chatbar = () => {
   });
 
   const {
-    state: { conversations, showChatbar, defaultModelId, folders, pluginKeys },
+    state: {
+      conversations,
+      showChatbar,
+      defaultModelId,
+      folders,
+      pluginKeys,
+      apiKeys,
+    },
     dispatch: homeDispatch,
     handleCreateFolder,
     handleNewConversation,
@@ -47,10 +61,15 @@ export const Chatbar = () => {
   } = chatBarContextValue;
 
   const handleApiKeyChange = useCallback(
-    (apiKey: string) => {
-      homeDispatch({ field: 'apiKey', value: apiKey });
-
-      localStorage.setItem('apiKey', apiKey);
+    (provider: string, apiKey: string) => {
+      homeDispatch({
+        field: 'apiKeys',
+        value: { ...apiKeys, [provider]: apiKey },
+      });
+      localStorage.setItem(
+        'apiKeys',
+        JSON.stringify({ ...apiKeys, [provider]: apiKey }),
+      );
     },
     [homeDispatch],
   );
@@ -119,7 +138,7 @@ export const Chatbar = () => {
           id: uuidv4(),
           name: t('New Conversation'),
           messages: [],
-          model: OpenAIModels[defaultModelId],
+          model: AllModels[defaultModelId],
           prompt: DEFAULT_SYSTEM_PROMPT,
           temperature: DEFAULT_TEMPERATURE,
           promptMode: DEFAULT_PROMPT_MODE,
@@ -162,7 +181,7 @@ export const Chatbar = () => {
             id: uuidv4(),
             name: t('New Conversation'),
             messages: [],
-            model: OpenAIModels[defaultModelId],
+            model: AllModels[defaultModelId],
             prompt: DEFAULT_SYSTEM_PROMPT,
             promptMode: DEFAULT_PROMPT_MODE,
             temperature: DEFAULT_TEMPERATURE,

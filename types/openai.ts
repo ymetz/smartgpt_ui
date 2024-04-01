@@ -1,5 +1,3 @@
-import { OPENAI_API_TYPE } from '../utils/app/const';
-
 export interface OpenAIModel {
   id: string;
   name: string;
@@ -10,7 +8,6 @@ export interface OpenAIModel {
 export enum OpenAIModelID {
   GPT_3_5 = 'gpt-3.5-turbo',
   GPT_3_5_AZ = 'gpt-35-turbo',
-  GPT_3_16K = 'gpt-3.5-turbo-16k',
   GPT_4 = 'gpt-4-0613',
   GPT_4_32K = 'gpt-4-32k',
   GPT_4_TURBO = 'gpt-4-1106-preview',
@@ -31,12 +28,6 @@ export const OpenAIModels: Record<OpenAIModelID, OpenAIModel> = {
     name: 'GPT-3.5',
     maxLength: 12000,
     tokenLimit: 4000,
-  },
-  [OpenAIModelID.GPT_3_16K]: {
-    id: OpenAIModelID.GPT_3_16K,
-    name: 'GPT-3-16K',
-    maxLength: 48000,
-    tokenLimit: 16000,
   },
   [OpenAIModelID.GPT_4]: {
     id: OpenAIModelID.GPT_4,

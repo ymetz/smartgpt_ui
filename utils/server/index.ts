@@ -8,6 +8,7 @@ import {
   ReconnectInterval,
   createParser,
 } from 'eventsource-parser';
+import { AnthropicModel } from '@/types/anthropic';
 
 export class OpenAIError extends Error {
   type: string;
@@ -17,6 +18,20 @@ export class OpenAIError extends Error {
   constructor(message: string, type: string, param: string, code: string) {
     super(message);
     this.name = 'OpenAIError';
+    this.type = type;
+    this.param = param;
+    this.code = code;
+  }
+}
+
+export class AnthropicError extends Error {
+  type: string;
+  param: string;
+  code: string;
+
+  constructor(message: string, type: string, param: string, code: string) {
+    super(message);
+    this.name = 'AnthropicError';
     this.type = type;
     this.param = param;
     this.code = code;
@@ -35,6 +50,7 @@ export const OpenAIStream = async (
   if (OPENAI_API_TYPE === 'azure') {
     url = `${OPENAI_API_HOST}/openai/deployments/${AZURE_DEPLOYMENT_ID}/chat/completions?api-version=${OPENAI_API_VERSION}`;
   }
+
   const res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
@@ -90,16 +106,100 @@ export const OpenAIStream = async (
       const onParse = (event: ParsedEvent | ReconnectInterval) => {
         if (event.type === 'event') {
           const data = event.data;
+              if (data != '[DONE]') {
+                try {
+                  const json = JSON.parse(data);
+                  if (json.choices[0].finish_reason != null) {
+                    controller.close();
+                    return;
+                  }
+                  const text = json.choices[0]?.delta?.content || '';
+                  const queue = encoder.encode(text);
+                  controller.enqueue(queue);
+                } catch (e) {
+                  controller.error(e);
+                }
+              }
+        }
+      };
 
+      const parser = createParser(onParse);
+
+      // prepend string
+      if (prependString) {
+        const queue = encoder.encode(prependString);
+        controller.enqueue(queue);
+      }
+
+      for await (const chunk of res.body as any) {
+        parser.feed(decoder.decode(chunk));
+      }
+    },
+  });
+
+  return stream;
+};
+
+export const AnthropicStream = async (
+  model: AnthropicModel,
+  systemPrompt: string,
+  temperature: number,
+  key: string,
+  messages: Message[],
+  prependString?: string,
+) => {
+  const url = 'https://api.anthropic.com/v1/messages';
+
+  console.log(messages);
+  
+  const res = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      'anthropic-version': '2023-06-01',
+      'anthropic-beta': 'messages-2023-12-15',
+      'X-API-Key': key ? key : process.env.ANTHROPIC_API_KEY,
+    } as HeadersInit,
+    method: 'POST',
+    body: JSON.stringify({
+      model: model.id,
+      messages: [
+        ...messages,
+      ],
+      system: systemPrompt,
+      max_tokens: 1000,
+      temperature: temperature,
+      stream: true,
+    }),
+  });
+
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+
+  if (res.status !== 200) {
+    const result = await res.json();
+    if (result.error) {
+      console.log(result.error);
+      throw new Error(`Anthropic API returned an error: ${result.error}`);
+    } else {
+      throw new Error(`Anthropic API returned an error: ${result.statusText}`);
+    }
+  }
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      const onParse = (event: ParsedEvent | ReconnectInterval) => {
+        if (event.type === 'event') {
+          const data = event.data;
           try {
-            const json = JSON.parse(data);
-            if (json.choices[0].finish_reason != null) {
+            if (event.event === 'message_stop') {
               controller.close();
               return;
             }
-            const text = json.choices[0].delta.content;
-            const queue = encoder.encode(text);
-            controller.enqueue(queue);
+            if (event.event === 'content_block_delta') {
+              const text = JSON.parse(data).delta.text;
+              const queue = encoder.encode(text);
+              controller.enqueue(queue);
+            }
           } catch (e) {
             controller.error(e);
           }
@@ -122,3 +222,5 @@ export const OpenAIStream = async (
 
   return stream;
 };
+
+
