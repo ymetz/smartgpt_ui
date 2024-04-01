@@ -110,6 +110,8 @@ const handler = async (req: Request): Promise<Response> => {
         );
         requests.push(stream);
       } else if (model.id.includes('claude')) {
+        // 1.5 second wait time between requests to avoid rate limiting
+        await new Promise((r) => setTimeout(r, 1500));
         stream = await AnthropicStream(
             model,
             promptToSend,
@@ -169,7 +171,6 @@ const handler = async (req: Request): Promise<Response> => {
     ] as Message[];
 
     let researcherRequest: any;
-    console.log("FOLLOWUP MODEL ID: ", followUpModel?.id);
     if (followUpModel?.id.includes('claude')) {
         researcherRequest = await AnthropicStream(
             followUpModel,
@@ -238,14 +239,27 @@ const handler = async (req: Request): Promise<Response> => {
       '',
     ].join('\n');
 
-    const resultStream = await OpenAIStream(
-      model,
-      promptToSend,
-      0.3,
-      openAIkey,
-      resolverMessagesToSend,
-      gptOutput,
-    );
+    let resultStream: any;
+    if (followUpModel?.id.includes('claude')) {
+      resultStream = await AnthropicStream(
+        model,
+        promptToSend,
+        0.3,
+        anthropicKey,
+        resolverMessagesToSend,
+        gptOutput,
+      );
+  }
+  else {
+    resultStream = await OpenAIStream(
+        model,
+        promptToSend,
+        0.3,
+        openAIkey,
+        resolverMessagesToSend,
+        gptOutput,
+      );
+  }
 
     return new Response(resultStream);
   } catch (error) {
