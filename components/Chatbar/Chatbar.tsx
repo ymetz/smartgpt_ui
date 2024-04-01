@@ -71,7 +71,7 @@ export const Chatbar = () => {
         JSON.stringify({ ...apiKeys, [provider]: apiKey }),
       );
     },
-    [homeDispatch],
+    [apiKeys, homeDispatch],
   );
 
   const handlePluginKeyChange = (pluginKey: PluginKey) => {
