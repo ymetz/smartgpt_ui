@@ -50,6 +50,7 @@ export const OpenAIStream = async (
   if (OPENAI_API_TYPE === 'azure') {
     url = `${OPENAI_API_HOST}/openai/deployments/${AZURE_DEPLOYMENT_ID}/chat/completions?api-version=${OPENAI_API_VERSION}`;
   }
+
   const res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
@@ -105,19 +106,20 @@ export const OpenAIStream = async (
       const onParse = (event: ParsedEvent | ReconnectInterval) => {
         if (event.type === 'event') {
           const data = event.data;
-
-          try {
-            const json = JSON.parse(data);
-            if (json.choices[0].finish_reason != null) {
-              controller.close();
-              return;
-            }
-            const text = json.choices[0].delta.content;
-            const queue = encoder.encode(text);
-            controller.enqueue(queue);
-          } catch (e) {
-            controller.error(e);
-          }
+              if (data != '[DONE]') {
+                try {
+                  const json = JSON.parse(data);
+                  if (json.choices[0].finish_reason != null) {
+                    controller.close();
+                    return;
+                  }
+                  const text = json.choices[0]?.delta?.content || '';
+                  const queue = encoder.encode(text);
+                  controller.enqueue(queue);
+                } catch (e) {
+                  controller.error(e);
+                }
+              }
         }
       };
 
@@ -187,7 +189,6 @@ export const AnthropicStream = async (
     async start(controller) {
       const onParse = (event: ParsedEvent | ReconnectInterval) => {
         if (event.type === 'event') {
-          console.log(event);
           const data = event.data;
           try {
             if (event.event === 'message_stop') {

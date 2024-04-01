@@ -6,7 +6,9 @@ import {
   DEFAULT_TEMPERATURE,
 } from '@/utils/app/const';
 import { OpenAIError, OpenAIStream } from '@/utils/server';
+import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai';
 import { AnthropicError, AnthropicStream } from '@/utils/server';
+import { AnthropicModel, AnthropicModelID, AnthropicModels } from '@/types/anthropic';
 
 import { ChatBody, Message } from '@/types/chat';
 import { Providers } from '@/types/plugin';
@@ -21,19 +23,12 @@ export const config = {
   runtime: 'edge',
 };
 
+const AllModels = { ...OpenAIModels, ...AnthropicModels };
+
 const handler = async (req: Request): Promise<Response> => {
   try {
     const { model, messages, keys, prompt, temperature, options } =
       (await req.json()) as ChatBody;
-
-    console.log('Request received: ', {
-      model,
-      messages,
-      keys,
-      prompt,
-      temperature,
-      options,
-    });
 
     await init((imports) => WebAssembly.instantiate(wasm, imports));
     const encoding = new Tiktoken(
@@ -60,6 +55,13 @@ const handler = async (req: Request): Promise<Response> => {
       options
         ?.find((op) => op.key == 'SMARTGPT_RESOLVER_PROMPT')
         ?.value.toString() || DEFAULT_RESOLVER_PROMPT;
+    let followUpModelId = options?.find((op) => op.key == 'SMARTGPT_FOLLOWUP_MODEL')?.value as string;
+    let followUpModel: OpenAIModel | AnthropicModel;
+    if (!followUpModelId || followUpModelId === '') {
+        followUpModel = model;
+    } else {
+        followUpModel = AllModels[followUpModelId as OpenAIModelID | AnthropicModelID] as OpenAIModel | AnthropicModel;
+        }
 
     let promptToSend = prompt;
     if (!promptToSend) {
@@ -96,15 +98,27 @@ const handler = async (req: Request): Promise<Response> => {
     messagesToSend.push({ role: 'assistant', content: customAssistantPrompt });
 
     let requests = [];
+    let stream: any;
     for (let i = 0; i < NUM_ASKS; i++) {
-      const stream = await OpenAIStream(
-        model,
-        promptToSend,
-        temperatureToUse,
-        openAIkey,
-        messagesToSend,
-      );
-      requests.push(stream);
+      if (model.id.includes('gpt')) {
+        stream = await OpenAIStream(
+            model,
+            promptToSend,
+            temperatureToUse,
+            openAIkey,
+            messagesToSend,
+        );
+        requests.push(stream);
+      } else if (model.id.includes('claude')) {
+        stream = await AnthropicStream(
+            model,
+            promptToSend,
+            temperatureToUse,
+            anthropicKey,
+            messagesToSend,
+        );
+        requests.push(stream);
+      }
     }
 
     //wait for readablestream to finish
@@ -154,14 +168,27 @@ const handler = async (req: Request): Promise<Response> => {
       { role: 'assistant', content: customAssistantPrompt },
     ] as Message[];
 
-    const researcherRequest = await OpenAIStream(
-      model,
-      promptToSend,
-      0.5,
-      openAIkey,
-      researcherMessagesToSend,
-    );
-
+    let researcherRequest: any;
+    console.log("FOLLOWUP MODEL ID: ", followUpModel?.id);
+    if (followUpModel?.id.includes('claude')) {
+        researcherRequest = await AnthropicStream(
+            followUpModel,
+            researcherPrompt,
+            1,
+            anthropicKey,
+            researcherMessagesToSend,
+        );
+    }
+    else {
+        researcherRequest = await OpenAIStream(
+            followUpModel,
+            researcherPrompt,
+            1,
+            openAIkey,
+            researcherMessagesToSend,
+        );
+    }
+    
     const researchReader = researcherRequest.getReader();
     let researcherResponse = '';
     while (true) {
