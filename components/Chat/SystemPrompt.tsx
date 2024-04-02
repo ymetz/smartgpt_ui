@@ -36,6 +36,7 @@ export const SystemPrompt: FC<Props> = ({
   const [promptInputValue, setPromptInputValue] = useState('');
   const [variables, setVariables] = useState<string[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isPromptVisible, setIsPromptVisible] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const promptListRef = useRef<HTMLUListElement | null>(null);
@@ -193,21 +194,36 @@ export const SystemPrompt: FC<Props> = ({
 
   return (
     <div className="flex flex-col">
-      <label className="mb-2 text-left text-neutral-700 dark:text-neutral-400">
+      <label 
+      onClick={() => setIsPromptVisible(!isPromptVisible)}
+      className="mb-2 text-left text-neutral-700 dark:text-neutral-400">
+      <span className="mr-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4 inline-block"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </span>
         {t('System Prompt')}
       </label>
+      <div className={`flex flex-col transition-all overflow-hidden duration-300 ease-in-out ${
+          isPromptVisible ? 'block' : 'hidden'
+        }`}>
       <textarea
         ref={textareaRef}
         className="w-full rounded-lg border border-neutral-200 bg-transparent px-4 py-3 text-neutral-900 dark:border-neutral-600 dark:text-neutral-100"
         style={{
           resize: 'none',
-          bottom: `${textareaRef?.current?.scrollHeight}px`,
-          maxHeight: '300px',
-          overflow: `${
-            textareaRef.current && textareaRef.current.scrollHeight > 400
-              ? 'auto'
-              : 'hidden'
-          }`,
+          bottom: `${textareaRef?.current?.scrollHeight}px`
         }}
         placeholder={
           t(`Enter a prompt or type "/" to select a prompt...`) || ''
@@ -238,6 +254,7 @@ export const SystemPrompt: FC<Props> = ({
           onClose={() => setIsModalVisible(false)}
         />
       )}
+      </div>
     </div>
   );
 };
