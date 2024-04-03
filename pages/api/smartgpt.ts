@@ -216,19 +216,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Nicely formatt the output via markdown as a concatenated string.
     const gptOutput = [
-      '### Prompt',
+      '### System Prompt',
       '',
       prompt,
       '',
       '### Initial GPT Answers',
-      '<details>\n\n',
-      '<summary>Click to expand</summary>\n\n',
       '',
       initialGptAnswersFormatted.join('\n'),
-      '\n',
-      '</details>\n',
-      //"### Researcher Prompt",
-      //"", researcherPrompt, "",
       '### Researcher Response',
       '',
       researcherResponse,

@@ -19,7 +19,7 @@ export interface HomeInitialState {
   conversations: Conversation[];
   selectedConversation: Conversation | undefined;
   currentMessage: Message | undefined;
-  prompts: Prompt[];
+  savedTemplates: Conversation[];
   templates: Template[];
   promptMode: string;
   temperature: number;
@@ -48,7 +48,7 @@ export const initialState: HomeInitialState = {
   conversations: [],
   selectedConversation: undefined,
   currentMessage: undefined,
-  prompts: [],
+  savedTemplates: [],
   templates: [],
   temperature: 1,
   promptMode: 'smartgpt',

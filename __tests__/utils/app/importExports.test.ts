@@ -52,12 +52,12 @@ describe('Export Format Functions', () => {
 
   describe('isExportFormatV4', () => {
     it('should return true for v4 format', () => {
-      const obj = { version: 4, history: [], folders: [], prompts: [] };
+      const obj = { version: 4, history: [], folders: [] };
       expect(isExportFormatV4(obj)).toBe(true);
     });
 
     it('should return false for non-v4 formats', () => {
-      const obj = { version: 5, history: [], folders: [], prompts: [] };
+      const obj = { version: 5, history: [], folders: [] };
       expect(isExportFormatV4(obj)).toBe(false);
     });
   });
@@ -107,7 +107,6 @@ describe('cleanData Functions', () => {
           },
         ],
         folders: [],
-        prompts: [],
       });
     });
   });
@@ -169,7 +168,6 @@ describe('cleanData Functions', () => {
             type: 'chat',
           },
         ],
-        prompts: [],
       });
     });
   });
@@ -204,17 +202,7 @@ describe('cleanData Functions', () => {
             name: 'folder 1',
             type: 'chat',
           },
-        ],
-        prompts: [
-          {
-            id: '1',
-            name: 'prompt 1',
-            description: '',
-            content: '',
-            model: OpenAIModels[OpenAIModelID.GPT_3_5],
-            folderId: null,
-          },
-        ],
+        ]
       } as ExportFormatV4;
 
       const obj = cleanData(data);
@@ -246,16 +234,6 @@ describe('cleanData Functions', () => {
             id: '1',
             name: 'folder 1',
             type: 'chat',
-          },
-        ],
-        prompts: [
-          {
-            id: '1',
-            name: 'prompt 1',
-            description: '',
-            content: '',
-            model: OpenAIModels[OpenAIModelID.GPT_3_5],
-            folderId: null,
           },
         ],
       });

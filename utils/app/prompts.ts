@@ -1,22 +1,22 @@
-import { Prompt } from '@/types/prompt';
+import { Conversation } from "@/types/chat";
 
-export const updatePrompt = (updatedPrompt: Prompt, allPrompts: Prompt[]) => {
-  const updatedPrompts = allPrompts.map((c) => {
-    if (c.id === updatedPrompt.id) {
-      return updatedPrompt;
+export const updateTemplate = (updatedTemplate: Conversation, allTemplates: Conversation[]) => {
+  const updatedTemplates = allTemplates.map((c) => {
+    if (c.id === updatedTemplate.id) {
+      return updatedTemplate;
     }
 
     return c;
   });
 
-  savePrompts(updatedPrompts);
+  saveTemplates(updatedTemplates);
 
   return {
-    single: updatedPrompt,
-    all: updatedPrompts,
+    single: updatedTemplate,
+    all: updatedTemplates,
   };
 };
 
-export const savePrompts = (prompts: Prompt[]) => {
-  localStorage.setItem('prompts', JSON.stringify(prompts));
+export const saveTemplates = (templates: Conversation[]) => {
+  localStorage.setItem('savedTemplates', JSON.stringify(templates));
 };

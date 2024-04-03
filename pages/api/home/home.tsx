@@ -26,7 +26,7 @@ import {
   updateConversation,
 } from '@/utils/app/conversation';
 import { saveFolders } from '@/utils/app/folders';
-import { savePrompts } from '@/utils/app/prompts';
+import { saveTemplates } from '@/utils/app/prompts';
 import { getSettings } from '@/utils/app/settings';
 
 import { AnthropicModelID, AnthropicModels } from '@/types/anthropic';
@@ -73,7 +73,7 @@ const Home = ({ defaultModelId }: Props) => {
       folders,
       conversations,
       selectedConversation,
-      prompts,
+      savedTemplates,
       templates,
       temperature,
     },
@@ -118,6 +118,7 @@ const Home = ({ defaultModelId }: Props) => {
   // FETCH MODELS ----------------------------------------------
 
   const handleSelectConversation = (conversation: Conversation) => {
+    console.log('handleSelectConversation', conversation);
     dispatch({
       field: 'selectedConversation',
       value: conversation,
@@ -160,7 +161,7 @@ const Home = ({ defaultModelId }: Props) => {
     dispatch({ field: 'conversations', value: updatedConversations });
     saveConversations(updatedConversations);
 
-    const updatedPrompts: Prompt[] = prompts.map((p) => {
+    const updatedTemplates: Conversation[] = savedTemplates.map((p) => {
       if (p.folderId === folderId) {
         return {
           ...p,
@@ -171,8 +172,8 @@ const Home = ({ defaultModelId }: Props) => {
       return p;
     });
 
-    dispatch({ field: 'prompts', value: updatedPrompts });
-    savePrompts(updatedPrompts);
+    dispatch({ field: 'savedTemplates', value: updatedTemplates });
+    saveTemplates(updatedTemplates);
   };
 
   const handleUpdateFolder = (folderId: string, name: string) => {
@@ -223,6 +224,31 @@ const Home = ({ defaultModelId }: Props) => {
 
     dispatch({ field: 'loading', value: false });
   };
+
+  const handleNewConversationFromTemplate = (template: Conversation) => {
+
+    let newTemplate = {
+      id: uuidv4(),
+      name: `New from ${template.name}`,
+      messages: [],
+      model: template.model,
+      prompt: template.prompt,
+      promptMode: template.promptMode,
+      temperature: 1,
+      folderId: null,
+      options: template.options,
+    };
+
+    const updatedConversations = [...conversations, newTemplate];
+
+    dispatch({ field: 'selectedConversation', value: newTemplate });
+    dispatch({ field: 'conversations', value: updatedConversations });
+
+    saveConversation(newTemplate);
+    saveConversations(updatedConversations);
+
+    dispatch({ field: 'loading', value: false });
+  }
 
   const handleUpdateConversation = (
     conversation: Conversation,
@@ -296,9 +322,9 @@ const Home = ({ defaultModelId }: Props) => {
       dispatch({ field: 'folders', value: JSON.parse(folders) });
     }
 
-    const prompts = localStorage.getItem('prompts');
-    if (prompts) {
-      dispatch({ field: 'prompts', value: JSON.parse(prompts) });
+    const savedTemplates = localStorage.getItem('savedTemplates');
+    if (savedTemplates) {
+      dispatch({ field: 'savedTemplates', value: JSON.parse(savedTemplates) });
     }
 
     const templates = localStorage.getItem('templates');
@@ -356,6 +382,7 @@ const Home = ({ defaultModelId }: Props) => {
         handleDeleteFolder,
         handleUpdateFolder,
         handleSelectConversation,
+        handleNewConversationFromTemplate,
         handleUpdateConversation,
       }}
     >
