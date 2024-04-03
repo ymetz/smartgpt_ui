@@ -2,7 +2,7 @@ import { NextUIProvider } from '@nextui-org/react';
 import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
-import { appWithTranslation } from 'next-i18next';
+//import { appWithTranslation } from 'next-i18next';
 import type { AppProps } from 'next/app';
 import { Inter } from 'next/font/google';
 
@@ -25,4 +25,4 @@ function App({ Component, pageProps }: AppProps<{}>) {
   );
 }
 
-export default appWithTranslation(App);
+export default App;

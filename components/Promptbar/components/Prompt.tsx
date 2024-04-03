@@ -34,7 +34,7 @@ export const PromptComponent = ({ template }: Props) => {
     handleDeleteTemplate,
   } = useContext(PromptbarContext);
   const { promptMode } = useContext(HomeContext).state;
-  const { handleSelectConversation } = useContext(HomeContext);
+  const { handleNewConversationFromTemplate, handleSelectConversation } = useContext(HomeContext);
 
   const [showModal, setShowModal] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -87,7 +87,7 @@ export const PromptComponent = ({ template }: Props) => {
         className="flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 text-sm transition-colors duration-200 hover:bg-[#343541]/90"
         draggable="true"
         onClick={(e) => {
-          handleSelectConversation(template);
+          handleNewConversationFromTemplate(template);
           e.stopPropagation();
         }}
         onDragStart={(e) => handleDragStart(e, template)}

@@ -211,7 +211,6 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
       apiKeys,
       conversations,
       homeDispatch,
-      pluginKeys,
       selectedConversation,
       stopConversationRef,
     ],

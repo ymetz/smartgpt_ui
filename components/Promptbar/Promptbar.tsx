@@ -123,12 +123,7 @@ const Promptbar = () => {
       promptDispatch({
         field: 'filteredTemplates',
         value: savedTemplates.filter((template) => {
-          const searchable =
-          template.name.toLowerCase();
-            //' ' +
-            //template.description.toLowerCase() +
-            //' ' +
-            //prompt.content.toLowerCase();
+          const searchable = template.name.toLowerCase();
           return searchable.includes(searchTerm.toLowerCase());
         }),
       });
@@ -149,7 +144,7 @@ const Promptbar = () => {
       <Sidebar<Conversation>
         side={'right'}
         isOpen={showPromptbar}
-        addItemButtonTitle={t('Save Prompts')}
+        addItemButtonTitle={t('Save From Current')}
         itemComponent={
           <Prompts
             templates={filteredTemplates.filter((prompt) => !prompt.folderId)}

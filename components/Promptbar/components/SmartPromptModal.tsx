@@ -21,8 +21,7 @@ export const SmartPromptModal: FC<Props> = ({
   const { t } = useTranslation('promptbar');
   const [name, setName] = useState(template.name);
   const [SystemPrompt, setSystemPrompts] = useState(template.prompt);
-  const [numInitialPrompts, setNumInitialPrompts] = useState(1);  
-  const [initialPrompts, setInitialPrompts] = useState<Message[]>((template.messages.length > 0) ? template.messages : [{ role: 'user', content: '' }]);
+  const [numInitialPrompts, setNumInitialPrompts] = useState(3);  
   const [assistantPrompt, setAssistantPrompt] = useState(template.options?.find(option => option.key === "SMARTGPT_ASSISTANT_PROMPT")?.value as string);
   const [researcherPrompt, setResearcherPrompt] = useState(template.options?.find(option => option.key === "SMARTGPT_RESEARCHER_PROMPT")?.value as string);
   const [resolverPrompt, setResolverPrompt] = useState(template.options?.find(option => option.key === "SMARTGPT_RESOLVER_PROMPT")?.value as string);
@@ -94,7 +93,6 @@ export const SmartPromptModal: FC<Props> = ({
             </div>
             <textarea
               className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
-              style={{ resize: 'none' }}
               placeholder={t('System Prompt') || ''}
               value={SystemPrompt}
               onChange={(e) => setSystemPrompts(e.target.value)}
@@ -102,35 +100,23 @@ export const SmartPromptModal: FC<Props> = ({
             />
 
             <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
-              {t('Initial Prompts')}
-            </div>
-            <div className="flex flex-row space-x-2 overflow-x-auto">
-              {[...Array(numInitialPrompts)].map((_, i) => (
-                <textarea
-                  key={i}
-                  className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
-                  style={{ resize: 'none' }}
-                  placeholder={t('Initial Prompt') || ''}
-                  value={initialPrompts[i]?.content}
-                  onChange={(e) => {
-                    const newPrompts = [...initialPrompts];
-                    newPrompts[i] = { role: 'user', content: e.target.value };
-                    setInitialPrompts(newPrompts);
-                  }}
-                  rows={4}
-                />
-              ))}
+              {t('Number of Asks')}
             </div>
             <div className="flex gap-4 items-center">
-              <button
-                type="button"
-                className="w-10 px-4 py-2 mt-6 border rounded-lg shadow border-neutral-500 text-neutral-900 hover:bg-neutral-100 focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-300"
-                onClick={() => {
-                  setNumInitialPrompts(numInitialPrompts + 1);
-                }}
-              >
-                <IconPlus size={18} />
-              </button>
+            <input
+              className="w-full rounded-lg border border-neutral-200 bg-transparent px-8 py-3 text-neutral-900 dark:border-neutral-600 dark:text-neutral-100"
+              style={{
+                resize: 'none',
+                bottom: `20px`,
+                overflow: `auto`,
+              }}
+              type="number"
+              value={numInitialPrompts as number}
+              onChange={(e) => {
+                setNumInitialPrompts(e.target.value as unknown as number);
+              }
+              }
+            />
             </div>
             <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
               {t('Assistant Prompt')}
@@ -173,7 +159,7 @@ export const SmartPromptModal: FC<Props> = ({
                   ...template,
                   name,
                   prompt: SystemPrompt,
-                  messages: initialPrompts,
+                  messages: [],
                   options: [
                     {key: "SMARTGPT_ASSISTANT_PROMPT", value: assistantPrompt as string, name: "Assistant Prompt", type: DataType.STRING},
                     {key: "SMARTGPT_RESEARCHER_PROMPT", value: researcherPrompt as string, name: "Researcher Prompt", type: DataType.STRING},

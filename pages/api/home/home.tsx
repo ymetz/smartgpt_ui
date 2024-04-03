@@ -118,6 +118,7 @@ const Home = ({ defaultModelId }: Props) => {
   // FETCH MODELS ----------------------------------------------
 
   const handleSelectConversation = (conversation: Conversation) => {
+    console.log('handleSelectConversation', conversation);
     dispatch({
       field: 'selectedConversation',
       value: conversation,
@@ -224,6 +225,31 @@ const Home = ({ defaultModelId }: Props) => {
     dispatch({ field: 'loading', value: false });
   };
 
+  const handleNewConversationFromTemplate = (template: Conversation) => {
+
+    let newTemplate = {
+      id: uuidv4(),
+      name: `New from ${template.name}`,
+      messages: [],
+      model: template.model,
+      prompt: template.prompt,
+      promptMode: template.promptMode,
+      temperature: 1,
+      folderId: null,
+      options: template.options,
+    };
+
+    const updatedConversations = [...conversations, newTemplate];
+
+    dispatch({ field: 'selectedConversation', value: newTemplate });
+    dispatch({ field: 'conversations', value: updatedConversations });
+
+    saveConversation(newTemplate);
+    saveConversations(updatedConversations);
+
+    dispatch({ field: 'loading', value: false });
+  }
+
   const handleUpdateConversation = (
     conversation: Conversation,
     data: KeyValuePair,
@@ -296,9 +322,9 @@ const Home = ({ defaultModelId }: Props) => {
       dispatch({ field: 'folders', value: JSON.parse(folders) });
     }
 
-    const prompts = localStorage.getItem('prompts');
-    if (prompts) {
-      dispatch({ field: 'prompts', value: JSON.parse(prompts) });
+    const savedTemplates = localStorage.getItem('savedTemplates');
+    if (savedTemplates) {
+      dispatch({ field: 'savedTemplates', value: JSON.parse(savedTemplates) });
     }
 
     const templates = localStorage.getItem('templates');
@@ -356,6 +382,7 @@ const Home = ({ defaultModelId }: Props) => {
         handleDeleteFolder,
         handleUpdateFolder,
         handleSelectConversation,
+        handleNewConversationFromTemplate,
         handleUpdateConversation,
       }}
     >
