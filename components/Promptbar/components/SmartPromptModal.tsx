@@ -3,31 +3,37 @@ import { FC, KeyboardEvent, useEffect, useRef, useState } from 'react';
 
 import { useTranslation } from 'next-i18next';
 
-import { Prompt } from '@/types/prompt';
+import { Conversation, Message } from '@/types/chat';
+import { SystemPrompt } from '@/components/Chat/SystemPrompt';
+import { DataType } from '@/types/plugin';
 
 interface Props {
-  prompt: Prompt;
+  template: Conversation;
   onClose: () => void;
-  onUpdatePrompt: (prompt: Prompt) => void;
+  onUpdateTemplate: (prompt: Conversation) => void;
 }
 
 export const SmartPromptModal: FC<Props> = ({
-  prompt,
+  template,
   onClose,
-  onUpdatePrompt,
+  onUpdateTemplate,
 }) => {
   const { t } = useTranslation('promptbar');
-  const [name, setName] = useState(prompt.name);
-  const [description, setDescription] = useState(prompt.description);
-  const [content, setContent] = useState(prompt.content);
-  const [numInitialPrompts, setNumInitialPrompts] = useState(1);
+  const [name, setName] = useState(template.name);
+  const [SystemPrompt, setSystemPrompts] = useState(template.prompt);
+  const [numInitialPrompts, setNumInitialPrompts] = useState(1);  
+  const [initialPrompts, setInitialPrompts] = useState<Message[]>((template.messages.length > 0) ? template.messages : [{ role: 'user', content: '' }]);
+  const [assistantPrompt, setAssistantPrompt] = useState(template.options?.find(option => option.key === "SMARTGPT_ASSISTANT_PROMPT")?.value as string);
+  const [researcherPrompt, setResearcherPrompt] = useState(template.options?.find(option => option.key === "SMARTGPT_RESEARCHER_PROMPT")?.value as string);
+  const [resolverPrompt, setResolverPrompt] = useState(template.options?.find(option => option.key === "SMARTGPT_RESOLVER_PROMPT")?.value as string);
+
 
   const modalRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleEnter = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      onUpdatePrompt({ ...prompt, name, description, content: content.trim() });
+      //onUpdateTemplate({ ...template, name, options: { ...template.options } });
       onClose();
     }
   };
@@ -84,26 +90,14 @@ export const SmartPromptModal: FC<Props> = ({
             />
 
             <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
-              {t('Description')}
-            </div>
-            <textarea
-              className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
-              style={{ resize: 'none' }}
-              placeholder={t('A description for your prompt.') || ''}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-            />
-
-            <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
               {t('System Prompt')}
             </div>
             <textarea
               className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
               style={{ resize: 'none' }}
               placeholder={t('System Prompt') || ''}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+              value={SystemPrompt}
+              onChange={(e) => setSystemPrompts(e.target.value)}
               rows={4}
             />
 
@@ -117,8 +111,12 @@ export const SmartPromptModal: FC<Props> = ({
                   className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
                   style={{ resize: 'none' }}
                   placeholder={t('Initial Prompt') || ''}
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
+                  value={initialPrompts[i]?.content}
+                  onChange={(e) => {
+                    const newPrompts = [...initialPrompts];
+                    newPrompts[i] = { role: 'user', content: e.target.value };
+                    setInitialPrompts(newPrompts);
+                  }}
                   rows={4}
                 />
               ))}
@@ -135,25 +133,25 @@ export const SmartPromptModal: FC<Props> = ({
               </button>
             </div>
             <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
+              {t('Assistant Prompt')}
+            </div>
+            <textarea
+              className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
+              style={{ resize: 'none' }}
+              placeholder={t('Assistant Prompt') || ''}
+              value={assistantPrompt}
+              onChange={(e) => setAssistantPrompt(e.target.value)}
+              rows={4}
+            />
+            <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
               {t('Researcher Prompt')}
             </div>
             <textarea
               className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
               style={{ resize: 'none' }}
               placeholder={t('Researcher Prompt') || ''}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={4}
-            />
-            <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
-              {t('Researcher Output')}
-            </div>
-            <textarea
-              className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
-              style={{ resize: 'none' }}
-              placeholder={t('Researcher Output') || ''}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+              value={researcherPrompt}
+              onChange={(e) => setResearcherPrompt(e.target.value)}
               rows={4}
             />
             <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
@@ -163,35 +161,30 @@ export const SmartPromptModal: FC<Props> = ({
               className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
               style={{ resize: 'none' }}
               placeholder={t('Resolver Prompt') || ''}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={4}
-            />
-            <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
-              {t('Resolver Output')}
-            </div>
-            <textarea
-              className="mt-2 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-[#40414F] dark:text-neutral-100"
-              style={{ resize: 'none' }}
-              placeholder={t('Resolver Output') || ''}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+              value={resolverPrompt}
+              onChange={(e) => setResolverPrompt(e.target.value)}
               rows={4}
             />
             <button
               type="button"
               className="w-full px-4 py-2 mt-6 border rounded-lg shadow border-neutral-500 text-neutral-900 hover:bg-neutral-100 focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-300"
               onClick={() => {
-                const updatedPrompt = {
-                  ...prompt,
+                const updatedTemplate: Conversation = {
+                  ...template,
                   name,
-                  description,
-                  content: content.trim(),
+                  prompt: SystemPrompt,
+                  messages: initialPrompts,
+                  options: [
+                    {key: "SMARTGPT_ASSISTANT_PROMPT", value: assistantPrompt as string, name: "Assistant Prompt", type: DataType.STRING},
+                    {key: "SMARTGPT_RESEARCHER_PROMPT", value: researcherPrompt as string, name: "Researcher Prompt", type: DataType.STRING},
+                    {key: "SMARTGPT_RESOLVER_PROMPT", value: resolverPrompt as string, name: "Resolver Prompt", type: DataType.STRING},
+                    {key: "SMART_GPT_NUM_ASKS", value: numInitialPrompts as number, name: "Number of Asks", type: DataType.NUMBER},
+                  ]
                 };
-
-                onUpdatePrompt(updatedPrompt);
+                onUpdateTemplate(updatedTemplate);
                 onClose();
-              }}
+              }
+              }
             >
               {t('Save')}
             </button>

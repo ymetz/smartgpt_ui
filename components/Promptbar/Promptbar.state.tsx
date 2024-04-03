@@ -1,11 +1,11 @@
-import { Prompt } from '@/types/prompt';
+import { Conversation } from '@/types/chat';
 
 export interface PromptbarInitialState {
   searchTerm: string;
-  filteredPrompts: Prompt[];
+  filteredTemplates: Conversation[];
 }
 
 export const initialState: PromptbarInitialState = {
   searchTerm: '',
-  filteredPrompts: [],
+  filteredTemplates: [],
 };

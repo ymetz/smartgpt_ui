@@ -3,16 +3,14 @@ import { useTranslation } from 'react-i18next';
 
 import { useCreateReducer } from '@/hooks/useCreateReducer';
 
-import { savePrompts } from '@/utils/app/prompts';
+import { saveTemplates } from '@/utils/app/prompts';
 
 import { AnthropicModels } from '@/types/anthropic';
 import { OpenAIModels } from '@/types/openai';
-import { Prompt } from '@/types/prompt';
 
 import HomeContext from '@/pages/api/home/home.context';
 
 import { PromptFolders } from './components/PromptFolders';
-import { PromptbarSettings } from './components/PromptbarSettings';
 import { Prompts } from './components/Prompts';
 
 import Sidebar from '../Sidebar';
@@ -20,6 +18,7 @@ import PromptbarContext from './PromptBar.context';
 import { PromptbarInitialState, initialState } from './Promptbar.state';
 
 import { v4 as uuidv4 } from 'uuid';
+import { Conversation } from '@/types/chat';
 
 const AllModels = {
   ...OpenAIModels,
@@ -34,13 +33,13 @@ const Promptbar = () => {
   });
 
   const {
-    state: { prompts, defaultModelId, showPromptbar },
+    state: { savedTemplates, defaultModelId, showPromptbar, selectedConversation },
     dispatch: homeDispatch,
     handleCreateFolder,
   } = useContext(HomeContext);
 
   const {
-    state: { searchTerm, filteredPrompts },
+    state: { searchTerm, filteredTemplates },
     dispatch: promptDispatch,
   } = promptBarContextValue;
 
@@ -49,43 +48,47 @@ const Promptbar = () => {
     localStorage.setItem('showPromptbar', JSON.stringify(!showPromptbar));
   };
 
-  const handleCreatePrompt = () => {
+  const handleCreateTemplate = () => {
     if (defaultModelId) {
-      const newPrompt: Prompt = {
-        id: uuidv4(),
-        name: `Template ${prompts.length + 1}`,
-        description: '',
-        content: '',
-        model: AllModels[defaultModelId],
-        folderId: null,
+      // copy values of selected conversation to new template
+      const newTemplate: Conversation = {
+        id: uuidv4() + selectedConversation?.id,
+        name: `Template ${savedTemplates.length + 1}`,
+        model: selectedConversation?.model || AllModels[defaultModelId],
+        messages: [],
+        promptMode: selectedConversation?.promptMode || 'smartgpt',
+        temperature: selectedConversation?.temperature || 1,
+        options: selectedConversation?.options,
+        folderId: '',
+        prompt: selectedConversation?.prompt || '',
       };
 
-      const updatedPrompts = [...prompts, newPrompt];
+      const updatedTemplates = [...savedTemplates, newTemplate];
 
-      homeDispatch({ field: 'prompts', value: updatedPrompts });
+      homeDispatch({ field: 'savedTemplates', value: updatedTemplates });
 
-      savePrompts(updatedPrompts);
+      saveTemplates(updatedTemplates);
     }
   };
 
-  const handleDeletePrompt = (prompt: Prompt) => {
-    const updatedPrompts = prompts.filter((p) => p.id !== prompt.id);
+  const handleDeleteTemplate = (template: Conversation) => {
+    const updatedTemplates = savedTemplates.filter((p) => p.id !== template.id);
 
-    homeDispatch({ field: 'prompts', value: updatedPrompts });
-    savePrompts(updatedPrompts);
+    homeDispatch({ field: 'savedTemplates', value: updatedTemplates });
+    saveTemplates(updatedTemplates);
   };
 
-  const handleUpdatePrompt = (prompt: Prompt) => {
-    const updatedPrompts = prompts.map((p) => {
-      if (p.id === prompt.id) {
-        return prompt;
+  const handleUpdateTemplate = (template: Conversation) => {
+    const updatedTemplates = savedTemplates.map((p) => {
+      if (p.id === template.id) {
+        return template;
       }
 
       return p;
     });
-    homeDispatch({ field: 'prompts', value: updatedPrompts });
+    homeDispatch({ field: 'savedTemplates', value: updatedTemplates });
 
-    savePrompts(updatedPrompts);
+    saveTemplates(updatedTemplates);
   };
 
   const InfoText = () => {
@@ -109,7 +112,7 @@ const Promptbar = () => {
         folderId: e.target.dataset.folderId,
       };
 
-      handleUpdatePrompt(updatedPrompt);
+      handleUpdateTemplate(updatedPrompt);
 
       e.target.style.background = 'none';
     }
@@ -118,48 +121,48 @@ const Promptbar = () => {
   useEffect(() => {
     if (searchTerm) {
       promptDispatch({
-        field: 'filteredPrompts',
-        value: prompts.filter((prompt) => {
+        field: 'filteredTemplates',
+        value: savedTemplates.filter((template) => {
           const searchable =
-            prompt.name.toLowerCase() +
-            ' ' +
-            prompt.description.toLowerCase() +
-            ' ' +
-            prompt.content.toLowerCase();
+          template.name.toLowerCase();
+            //' ' +
+            //template.description.toLowerCase() +
+            //' ' +
+            //prompt.content.toLowerCase();
           return searchable.includes(searchTerm.toLowerCase());
         }),
       });
     } else {
-      promptDispatch({ field: 'filteredPrompts', value: prompts });
+      promptDispatch({ field: 'filteredTemplates', value: savedTemplates });
     }
-  }, [searchTerm, prompts]);
+  }, [searchTerm, savedTemplates]);
 
   return (
     <PromptbarContext.Provider
       value={{
         ...promptBarContextValue,
-        handleCreatePrompt,
-        handleDeletePrompt,
-        handleUpdatePrompt,
+        handleCreateTemplate,
+        handleDeleteTemplate,
+        handleUpdateTemplate,
       }}
     >
-      <Sidebar<Prompt>
+      <Sidebar<Conversation>
         side={'right'}
         isOpen={showPromptbar}
-        addItemButtonTitle={t('New Template')}
+        addItemButtonTitle={t('Save Prompts')}
         itemComponent={
           <Prompts
-            prompts={filteredPrompts.filter((prompt) => !prompt.folderId)}
+            templates={filteredTemplates.filter((prompt) => !prompt.folderId)}
           />
         }
         folderComponent={<PromptFolders />}
-        items={filteredPrompts}
+        items={filteredTemplates}
         searchTerm={searchTerm}
         handleSearchTerm={(searchTerm: string) =>
           promptDispatch({ field: 'searchTerm', value: searchTerm })
         }
         toggleOpen={handleTogglePromptbar}
-        handleCreateItem={handleCreatePrompt}
+        handleCreateItem={handleCreateTemplate}
         handleCreateFolder={() => handleCreateFolder(t('New folder'), 'prompt')}
         handleDrop={handleDrop}
         footerComponent={<InfoText />}

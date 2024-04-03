@@ -26,7 +26,7 @@ import {
   updateConversation,
 } from '@/utils/app/conversation';
 import { saveFolders } from '@/utils/app/folders';
-import { savePrompts } from '@/utils/app/prompts';
+import { saveTemplates } from '@/utils/app/prompts';
 import { getSettings } from '@/utils/app/settings';
 
 import { AnthropicModelID, AnthropicModels } from '@/types/anthropic';
@@ -73,7 +73,7 @@ const Home = ({ defaultModelId }: Props) => {
       folders,
       conversations,
       selectedConversation,
-      prompts,
+      savedTemplates,
       templates,
       temperature,
     },
@@ -160,7 +160,7 @@ const Home = ({ defaultModelId }: Props) => {
     dispatch({ field: 'conversations', value: updatedConversations });
     saveConversations(updatedConversations);
 
-    const updatedPrompts: Prompt[] = prompts.map((p) => {
+    const updatedTemplates: Conversation[] = savedTemplates.map((p) => {
       if (p.folderId === folderId) {
         return {
           ...p,
@@ -171,8 +171,8 @@ const Home = ({ defaultModelId }: Props) => {
       return p;
     });
 
-    dispatch({ field: 'prompts', value: updatedPrompts });
-    savePrompts(updatedPrompts);
+    dispatch({ field: 'savedTemplates', value: updatedTemplates });
+    saveTemplates(updatedTemplates);
   };
 
   const handleUpdateFolder = (folderId: string, name: string) => {

@@ -53,8 +53,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
       pluginKeys,
       messageIsStreaming,
       modelError,
-      loading,
-      prompts,
+      loading
     },
     handleUpdateConversation,
     dispatch: homeDispatch,
@@ -383,7 +382,6 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
 
                       <SystemPrompt
                         conversation={selectedConversation}
-                        prompts={prompts}
                         onChangePrompt={(prompt) =>
                           handleUpdateConversation(selectedConversation, {
                             key: 'prompt',
