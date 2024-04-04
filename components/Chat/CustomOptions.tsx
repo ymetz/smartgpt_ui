@@ -125,7 +125,7 @@ export const CustomOptions: FC<Props> = ({
           }}
           type="number"
           min={1}
-          max={10}
+          max={11}
           value={option.value as number}
           onChange={(e) => {
             const newOptions = options.map((o) => {
