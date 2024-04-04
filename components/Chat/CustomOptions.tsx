@@ -124,6 +124,8 @@ export const CustomOptions: FC<Props> = ({
             overflow: `auto`,
           }}
           type="number"
+          min={1}
+          max={10}
           value={option.value as number}
           onChange={(e) => {
             const newOptions = options.map((o) => {

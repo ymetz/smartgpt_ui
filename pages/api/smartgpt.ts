@@ -41,7 +41,7 @@ const handler = async (req: Request): Promise<Response> => {
     let assistantPrompt = options?.find((op) => op.key == 'SMARTGPT_ASSISTANT_PROMPT')?.value?.toString() || DEFAULT_ASSISTANT_PROMPT.toString();
     let researcherPrompt = options?.find((op) => op.key == 'SMARTGPT_RESEARCHER_PROMPT')?.value?.toString() || DEFAULT_RESEARCHER_PROMPT.toString();
     let resolverPrompt = options?.find((op) => op.key == 'SMARTGPT_RESOLVER_PROMPT')?.value?.toString() || DEFAULT_RESOLVER_PROMPT.toString();
-    let numInitialAsks = options?.find((op) => op.key == 'SMARTGPT_NUM_INITIAL_ASKS')?.value?.toString() as unknown as number || 3;
+    let numInitialAsks = options?.find((op) => op.key == 'SMART_GPT_NUM_ASKS')?.value as number || 3;
     const prompt_tokens = encoding.encode(initialSystemPrompt);
     let tokenCount = prompt_tokens.length;
     let followUpModelId = options?.find((op) => op.key == 'SMARTGPT_FOLLOWUP_MODEL')?.value as string;
