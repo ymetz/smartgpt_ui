@@ -116,7 +116,7 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     // send initial system prompt back to the client
-    processStreamAndGetText(null, Promise.resolve([]), false, `### System Prompt:\n${initialSystemPrompt}\n\n### Initial GPT Answers (${numInitialAsks} Asks):\n`);
+    processStreamAndGetText(null, Promise.resolve([]), false, `### System Prompt:\n${initialSystemPrompt}\n\n### Initial GPT Answers (${numInitialAsks} Asks, Model: ${model?.id || 'unknown model'}):\n`);
 
     // ASK phase
     /*const initialAskPromises = Array.from({ length: numInitialAsks }, () => processStreamAndGetText(model, messagesToSendPromise));
@@ -129,14 +129,14 @@ const handler = async (req: Request): Promise<Response> => {
     const researcherMessages = prepareResearcherMessages(initialResponseTexts, numInitialAsks, researcherPrompt);
 
     // RESEARCHER phase
-    const researcherResponsePromise = processStreamAndGetText(model, researcherMessages, false, `\n### Researcher Prompt:\n${researcherPrompt}\n\n### Researcher Response:\n`);
+    const researcherResponsePromise = processStreamAndGetText(followUpModel, researcherMessages, false, `\n### Researcher Prompt  (Model: ${followUpModel?.id || 'unknown model'}):\n${researcherPrompt}\n\n### Researcher Response:\n`);
 
     // Assuming you have a function to prepare messages for the resolver phase
     // RESOLVER phase could be similar to the RESEARCHER phase, based on your application logic
     const resolverMessagesPromise = prepareResolverMessages(researcherResponsePromise, initialResponseTexts, numInitialAsks, resolverPrompt, assistantPrompt);
 
     // Send the resolver messages to the model
-    processStreamAndGetText(followUpModel, resolverMessagesPromise, false, `\n### Resolver Prompt:\n${resolverPrompt}\n\n### Resolver Response:\n`, true);
+    processStreamAndGetText(followUpModel, resolverMessagesPromise, false, `\n### Resolver Prompt (Model: ${followUpModel?.id || 'unknown model'}):\n${resolverPrompt}\n\n### Resolver Response:\n`, true);
 
     return new Response(transformStream.readable, {
       headers: {

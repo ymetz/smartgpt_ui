@@ -28,6 +28,7 @@ interface ChatFolder {
 export interface ExportFormatV2 {
   history: Conversation[] | null;
   folders: ChatFolder[] | null;
+  savedTemplates: Conversation[] | null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -35,11 +36,12 @@ export interface ExportFormatV3 {
   version: 3;
   history: Conversation[];
   folders: FolderInterface[];
+  savedTemplates: Conversation[];
 }
 
 export interface ExportFormatV4 {
   version: 4;
   history: Conversation[];
   folders: FolderInterface[];
-  prompts: Prompt[];
+  savedTemplates: Conversation[];
 }
