@@ -5,7 +5,7 @@ import {
   DEFAULT_RESOLVER_PROMPT,
   DEFAULT_SYSTEM_PROMPT,
 } from '@/utils/app/const';
-import { OpenAIStream, AnthropicStream, OpenAIError } from '@/utils/server';
+import { OpenAIStream, AnthropicStream, OpenAIError, AnthropicError } from '@/utils/server';
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai';
 import { AnthropicModel, AnthropicModelID, AnthropicModels } from '@/types/anthropic';
 import { ChatBody, Message } from '@/types/chat';
@@ -15,6 +15,7 @@ import { Providers } from '@/types/plugin';
 import wasm from '../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module';
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json';
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init';
+import { A } from 'vitest/dist/types-fafda418';
 
 const AllModels = { ...OpenAIModels, ...AnthropicModels };
 
@@ -77,12 +78,16 @@ const handler = async (req: Request): Promise<Response> => {
     const processStreamAndGetText = async (model: OpenAIModel | AnthropicModel | null, messages: Promise<Message[]>, waitForDone: boolean = false, prependString?: string, closeWriter: boolean = false): Promise<string> => {
       let stream;
       let textContent = '';
-      if (model) {
-        if (model.id.includes('gpt')) {
-          stream = await OpenAIStream(model, initialSystemPrompt, temperatureToUse, openAIkey, await messages, undefined);
-        } else if (model.id.includes('claude')) {
-          stream = await AnthropicStream(model, initialSystemPrompt, temperatureToUse, anthropicKey, await messages, undefined);
+      try {
+        if (model) {
+          if (model.id.includes('gpt')) {
+            stream = await OpenAIStream(model, initialSystemPrompt, temperatureToUse, openAIkey, await messages, undefined);
+          } else if (model.id.includes('claude')) {
+            stream = await AnthropicStream(model, initialSystemPrompt, temperatureToUse, anthropicKey, await messages, undefined);
+          }
         }
+      } catch (error) {
+        throw error;
       }
       if (prependString && !waitForDone) {
         // we can just have a prepend string, just return it as is
@@ -145,8 +150,11 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error) {
-    console.error(error);
-    return new Response('Error', { status: 500 });
+    if (error instanceof OpenAIError || error instanceof AnthropicError) {
+      return new Response('Error', { status: 500, statusText: error.message });
+    } else {
+      return new Response('Error', { status: 500 });
+    }
   }
   
 };
