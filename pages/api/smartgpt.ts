@@ -15,7 +15,6 @@ import { Providers } from '@/types/plugin';
 import wasm from '../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module';
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json';
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init';
-import { A } from 'vitest/dist/types-fafda418';
 
 const AllModels = { ...OpenAIModels, ...AnthropicModels };
 
@@ -150,7 +149,9 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error) {
-    if (error instanceof OpenAIError || error instanceof AnthropicError) {
+    if (error instanceof OpenAIError) {
+      return new Response('Error', { status: 500, statusText: error.message });
+    } else if (error instanceof AnthropicError) {
       return new Response('Error', { status: 500, statusText: error.message });
     } else {
       return new Response('Error', { status: 500 });
