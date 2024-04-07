@@ -15,6 +15,7 @@ import { Providers } from '@/types/plugin';
 import wasm from '../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module';
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json';
 import { Tiktoken, init } from '@dqbd/tiktoken/lite/init';
+import { A } from 'vitest/dist/types-fafda418';
 
 const AllModels = { ...OpenAIModels, ...AnthropicModels };
 
