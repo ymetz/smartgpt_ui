@@ -12,28 +12,24 @@ import { AnthropicModel } from '@/types/anthropic';
 
 export class OpenAIError extends Error {
   type: string;
-  param: string;
   code: string;
 
-  constructor(message: string, type: string, param: string, code: string) {
+  constructor(message: string, type: string, code: string) {
     super(message);
     this.name = 'OpenAIError';
     this.type = type;
-    this.param = param;
     this.code = code;
   }
 }
 
 export class AnthropicError extends Error {
   type: string;
-  param: string;
   code: string;
 
-  constructor(message: string, type: string, param: string, code: string) {
+  constructor(message: string, type: string, code: string) {
     super(message);
     this.name = 'AnthropicError';
     this.type = type;
-    this.param = param;
     this.code = code;
   }
 }
@@ -50,6 +46,9 @@ export const OpenAIStream = async (
   if (OPENAI_API_TYPE === 'azure') {
     url = `${OPENAI_API_HOST}/openai/deployments/${AZURE_DEPLOYMENT_ID}/chat/completions?api-version=${OPENAI_API_VERSION}`;
   }
+
+  console.log("Messages: ", messages);
+  console.log("System Prompt: ", systemPrompt);
 
   const res = await fetch(url, {
     headers: {
@@ -86,10 +85,10 @@ export const OpenAIStream = async (
   if (res.status !== 200) {
     const result = await res.json();
     if (result.error) {
+      console.log(result.error);
       throw new OpenAIError(
         result.error.message,
         result.error.type,
-        result.error.param,
         result.error.code,
       );
     } else {
@@ -149,6 +148,9 @@ export const AnthropicStream = async (
   prependString?: string,
 ) => {
   const url = 'https://api.anthropic.com/v1/messages';
+
+  console.log("Messages: ", messages);
+  console.log("System Prompt: ", systemPrompt);
   
   const res = await fetch(url, {
     headers: {
@@ -179,7 +181,6 @@ export const AnthropicStream = async (
       throw new AnthropicError(
         result.error.message,
         result.error.type,
-        result.error.param,
         result.error.code,
       );
     } else {

@@ -52,7 +52,7 @@ const handler = async (req: Request): Promise<Response> => {
         followUpModel = AllModels[followUpModelId as OpenAIModelID | AnthropicModelID] as OpenAIModel | AnthropicModel;
       }
     
-    let messagesToSend: Message[] = [...messages];
+    let messagesToSend: Message[] = [];
 
     
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -65,6 +65,11 @@ const handler = async (req: Request): Promise<Response> => {
         tokenCount += tokens.length;
         messagesToSend = [message, ...messagesToSend];
     }
+
+    // contains messages request + a leading message to indicate the original user request
+    let overFirstRequest = { role: 'user', 'content': `The original user request:\n${messagesToSend[0].content}`} as Message;
+    const originalRequests: Promise<Message[]> = Promise.resolve([overFirstRequest, ...messagesToSend.slice(1)]);
+
     // convert messagesToSend to a promise
     messagesToSend.push({ role: 'assistant', content: assistantPrompt });
     const messagesToSendPromise = Promise.resolve(messagesToSend);
@@ -74,10 +79,13 @@ const handler = async (req: Request): Promise<Response> => {
     const writer = transformStream.writable.getWriter();
 
     // Function to process stream and return its text content
-    const processStreamAndGetText = async (model: OpenAIModel | AnthropicModel | null, messages: Promise<Message[]>, waitForDone: boolean = false, prependString?: string, closeWriter: boolean = false): Promise<string> => {
+    const processStreamAndGetText = async (model: OpenAIModel | AnthropicModel | null, messages: Promise<Message[]>, waitForDone: boolean = false, prependString?: string, rateLimitWait?: number, closeWriter: boolean = false): Promise<string> => {
       let stream;
       let textContent = '';
       try {
+        if (rateLimitWait && rateLimitWait > 0) {
+          await new Promise((resolve) => setTimeout(resolve, rateLimitWait));
+        }
         if (model) {
           if (model.id.includes('gpt')) {
             stream = await OpenAIStream(model, initialSystemPrompt, temperatureToUse, openAIkey, await messages, undefined);
@@ -121,27 +129,26 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     // send initial system prompt back to the client
-    processStreamAndGetText(null, Promise.resolve([]), false, `### System Prompt:\n${initialSystemPrompt}\n\n### Initial GPT Answers (${numInitialAsks} Asks, Model: ${model?.id || 'unknown model'}):\n`);
+    processStreamAndGetText(null, Promise.resolve([]), false, `### System Prompt:\n${initialSystemPrompt}\n\n### Initial GPT Answers (${numInitialAsks} Asks, Model: ${model?.id || 'unknown model'}):\n`, 0);
 
     // ASK phase
-    /*const initialAskPromises = Array.from({ length: numInitialAsks }, () => processStreamAndGetText(model, messagesToSendPromise));
-    const initialResponseTexts = Promise.all(initialAskPromises);*/
-    // for the initial asks, we want to attach the index of the ask to the response so we can identify it later
-    const initialAskPromises = Array.from({ length: numInitialAsks }, (_, i) => processStreamAndGetText(model, messagesToSendPromise, true, `\n#### Answer:\n`));
-    const initialResponseTexts = Promise.all(initialAskPromises);
-
+    // Process the initial asks in parallel, however, we can add a timeout for the claude model to avoid rate limiting
+    const perModelTimeout = model.id.includes('claude') ? 2000 : 0
+    const initialAskPromises = Array.from({ length: numInitialAsks }, (_, i) => processStreamAndGetText(model, messagesToSendPromise, true, `\n#### Answer:\n`, i * 1200));
+    // if an error is thrown, just ignore it and continue with the successful responses
+    let initialResponseTexts: Promise<string[]> =  Promise.allSettled(initialAskPromises).then((results) => results.filter((result) => result.status === 'fulfilled').map((result) => (result as PromiseFulfilledResult<string>).value));
     // Process the initial response text to prepare messages for the researcher phase
-    const researcherMessages = prepareResearcherMessages(initialResponseTexts, numInitialAsks, researcherPrompt, assistantPrompt);
+    const researcherMessages = prepareResearcherMessages(originalRequests, initialResponseTexts, numInitialAsks, researcherPrompt, assistantPrompt);
 
     // RESEARCHER phase
-    const researcherResponsePromise = processStreamAndGetText(followUpModel, researcherMessages, false, `\n### Researcher Prompt  (Model: ${followUpModel?.id || 'unknown model'}):\n${substituteNumAsks(researcherPrompt, numInitialAsks)}\n\n### Researcher Response:\n`);
+    const researcherResponsePromise = processStreamAndGetText(followUpModel, researcherMessages, false, `\n### Researcher Prompt  (Model: ${followUpModel?.id || 'unknown model'}):\n${substituteNumAsks(researcherPrompt, numInitialAsks)}\n\n### Researcher Response:\n`,  0);
 
     // Assuming you have a function to prepare messages for the resolver phase
     // RESOLVER phase could be similar to the RESEARCHER phase, based on your application logic
-    const resolverMessagesPromise = prepareResolverMessages(researcherResponsePromise, initialResponseTexts, numInitialAsks, resolverPrompt, assistantPrompt);
+    const resolverMessagesPromise = prepareResolverMessages(originalRequests, researcherResponsePromise, initialResponseTexts, numInitialAsks, resolverPrompt, assistantPrompt);
 
     // Send the resolver messages to the model
-    processStreamAndGetText(followUpModel, resolverMessagesPromise, false, `\n### Resolver Prompt (Model: ${followUpModel?.id || 'unknown model'}):\n${substituteNumAsks(resolverPrompt, numInitialAsks)}\n\n### Resolver Response:\n`, true);
+    processStreamAndGetText(followUpModel, resolverMessagesPromise, false, `\n### Resolver Prompt (Model: ${followUpModel?.id || 'unknown model'}):\n${substituteNumAsks(resolverPrompt, numInitialAsks)}\n\n### Resolver Response:\n`, 0, true);
 
     return new Response(transformStream.readable, {
       headers: {
@@ -180,7 +187,7 @@ function substituteNumAsks(prompt: string,numInitialAsks: number) {
  * @param researcherAssistantPrompt 
  * @returns 
  */
-async function prepareResearcherMessages(initialResponseTexts: Promise<string[]>, numInitialAsks: number, researcherPrompt: string, assistantPrompt: string): Promise<Message[]> {
+async function prepareResearcherMessages(originalPrompt: Promise<Message[]>, initialResponseTexts: Promise<string[]>, numInitialAsks: number, researcherPrompt: string, assistantPrompt: string): Promise<Message[]> {
     const sendResearcherPrompt = await initialResponseTexts.then((responses) =>
       responses.reduce(
         (acc, currentResponse, idx) =>
@@ -190,8 +197,9 @@ async function prepareResearcherMessages(initialResponseTexts: Promise<string[]>
     );
 
     const researcherMessagesToSend = [
-      { role: 'user', content: sendResearcherPrompt },
+      ...(await originalPrompt),
       { role: 'assistant', content: assistantPrompt },
+      { role: 'user', content: sendResearcherPrompt },
     ] as Message[];
 
     return researcherMessagesToSend;
@@ -205,8 +213,8 @@ async function prepareResearcherMessages(initialResponseTexts: Promise<string[]>
  * @param resolverSystemPrompt 
  * @param resolverAssistantPrompt 
  */
-async function prepareResolverMessages(researcherResponse: Promise<string>, initialResponses: Promise<string[]>, numInitialAsks: number, resolverPrompt: string, assistantPrompt: string): Promise<Message[]> {
-  const sendResolverPrompt =
+async function prepareResolverMessages(originalPrompt: Promise<Message[]>, researcherResponse: Promise<string>, initialResponses: Promise<string[]>, numInitialAsks: number, resolverPrompt: string, assistantPrompt: string): Promise<Message[]> {
+   const sendResolverPrompt =
     substituteNumAsks(resolverPrompt, numInitialAsks) +
     `Researcher's findings: ${await researcherResponse}
   Answer Options: ${await initialResponses.then((responses) =>
@@ -218,8 +226,9 @@ async function prepareResolverMessages(researcherResponse: Promise<string>, init
   )}`;
 
   const resolverMessagesToSend = [
-    { role: 'user', content: sendResolverPrompt },
+    ...(await originalPrompt),
     { role: 'assistant', content: assistantPrompt },
+    { role: 'user', content: sendResolverPrompt },
   ] as Message[];
 
   return resolverMessagesToSend;
