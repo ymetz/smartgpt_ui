@@ -47,9 +47,6 @@ export const OpenAIStream = async (
     url = `${OPENAI_API_HOST}/openai/deployments/${AZURE_DEPLOYMENT_ID}/chat/completions?api-version=${OPENAI_API_VERSION}`;
   }
 
-  console.log("Messages: ", messages);
-  console.log("System Prompt: ", systemPrompt);
-
   const res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
@@ -148,9 +145,6 @@ export const AnthropicStream = async (
   prependString?: string,
 ) => {
   const url = 'https://api.anthropic.com/v1/messages';
-
-  console.log("Messages: ", messages);
-  console.log("System Prompt: ", systemPrompt);
   
   const res = await fetch(url, {
     headers: {
