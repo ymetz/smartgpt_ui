@@ -1,6 +1,7 @@
 import {
   IconBulbFilled,
   IconCheck,
+  IconEdit,
   IconTrash,
   IconX,
 } from '@tabler/icons-react';
@@ -12,7 +13,7 @@ import {
   useState,
 } from 'react';
 
-import { Prompt } from '@/types/prompt';
+import { Conversation } from '@/types/chat';
 
 import HomeContext from '@/pages/api/home/home.context';
 
@@ -23,24 +24,25 @@ import { PromptModal } from './PromptModal';
 import { SmartPromptModal } from './SmartPromptModal';
 
 interface Props {
-  prompt: Prompt;
+  template: Conversation;
 }
 
-export const PromptComponent = ({ prompt }: Props) => {
+export const PromptComponent = ({ template }: Props) => {
   const {
     dispatch: promptDispatch,
-    handleUpdatePrompt,
-    handleDeletePrompt,
+    handleUpdateTemplate,
+    handleDeleteTemplate,
   } = useContext(PromptbarContext);
   const { promptMode } = useContext(HomeContext).state;
+  const { handleNewConversationFromTemplate, handleSelectConversation } = useContext(HomeContext);
 
   const [showModal, setShowModal] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
 
-  const handleUpdate = (prompt: Prompt) => {
-    handleUpdatePrompt(prompt);
+  const handleUpdate = (template: Conversation) => {
+    handleUpdateTemplate(template);
     promptDispatch({ field: 'searchTerm', value: '' });
   };
 
@@ -48,7 +50,7 @@ export const PromptComponent = ({ prompt }: Props) => {
     e.stopPropagation();
 
     if (isDeleting) {
-      handleDeletePrompt(prompt);
+      handleDeleteTemplate(template);
       promptDispatch({ field: 'searchTerm', value: '' });
     }
 
@@ -65,9 +67,9 @@ export const PromptComponent = ({ prompt }: Props) => {
     setIsDeleting(true);
   };
 
-  const handleDragStart = (e: DragEvent<HTMLButtonElement>, prompt: Prompt) => {
+  const handleDragStart = (e: DragEvent<HTMLButtonElement>, template: Conversation) => {
     if (e.dataTransfer) {
-      e.dataTransfer.setData('prompt', JSON.stringify(prompt));
+      e.dataTransfer.setData('template', JSON.stringify(template));
     }
   };
 
@@ -85,25 +87,28 @@ export const PromptComponent = ({ prompt }: Props) => {
         className="flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 text-sm transition-colors duration-200 hover:bg-[#343541]/90"
         draggable="true"
         onClick={(e) => {
+          handleNewConversationFromTemplate(template);
           e.stopPropagation();
-          setShowModal(true);
         }}
-        onDragStart={(e) => handleDragStart(e, prompt)}
+        onDragStart={(e) => handleDragStart(e, template)}
         onMouseLeave={() => {
           setIsDeleting(false);
           setIsRenaming(false);
           setRenameValue('');
         }}
       >
-        <IconBulbFilled size={18} />
-
+        
         <div className="relative max-h-5 flex-1 overflow-hidden text-ellipsis whitespace-nowrap break-all pr-4 text-left text-[12.5px] leading-3">
-          {prompt.name}
+          {template.name}
         </div>
       </button>
 
       {(isDeleting || isRenaming) && (
         <div className="absolute right-1 z-10 flex text-gray-300">
+          <SidebarActionButton handleClick={() => setShowModal(true)}>
+            <IconEdit size={18} className="text-gray-300" />
+          </SidebarActionButton>
+          
           <SidebarActionButton handleClick={handleDelete}>
             <IconCheck size={18} />
           </SidebarActionButton>
@@ -116,6 +121,10 @@ export const PromptComponent = ({ prompt }: Props) => {
 
       {!isDeleting && !isRenaming && (
         <div className="absolute right-1 z-10 flex text-gray-300">
+          <SidebarActionButton handleClick={() => setShowModal(true)}>
+            <IconEdit size={18} className="text-gray-300" />
+          </SidebarActionButton>
+          
           <SidebarActionButton handleClick={handleOpenDeleteModal}>
             <IconTrash size={18} />
           </SidebarActionButton>
@@ -125,16 +134,17 @@ export const PromptComponent = ({ prompt }: Props) => {
       {showModal &&
         (promptMode === 'smartgpt' ? (
           <SmartPromptModal
-            prompt={prompt}
+            template={template}
             onClose={() => setShowModal(false)}
-            onUpdatePrompt={handleUpdate}
+            onUpdateTemplate={handleUpdate}
           />
         ) : (
-          <PromptModal
-            prompt={prompt}
+          null
+          /*<PromptModal
+            template={template}
             onClose={() => setShowModal(false)}
-            onUpdatePrompt={handleUpdate}
-          />
+            onUpdateTemplate={handleUpdate}
+          />*/
         ))}
     </div>
   );

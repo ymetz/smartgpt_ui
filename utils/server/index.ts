@@ -70,7 +70,7 @@ export const OpenAIStream = async (
         },
         ...messages,
       ],
-      max_tokens: 1000,
+      max_tokens: model?.tokenLimit || 1000,
       temperature: temperature,
       stream: true,
     }),
@@ -145,8 +145,6 @@ export const AnthropicStream = async (
   prependString?: string,
 ) => {
   const url = 'https://api.anthropic.com/v1/messages';
-
-  console.log(messages);
   
   const res = await fetch(url, {
     headers: {
@@ -162,7 +160,7 @@ export const AnthropicStream = async (
         ...messages,
       ],
       system: systemPrompt,
-      max_tokens: 1000,
+      max_tokens: model?.tokenLimit || 1000,
       temperature: temperature,
       stream: true,
     }),
@@ -180,7 +178,7 @@ export const AnthropicStream = async (
         result.error.code,
       );
     } else {
-      throw new Error(`Anthropic API returned an error: ${result.statusText}`);
+      throw new Error(`Anthropic API returned an error: ${decoder.decode(result?.value) || result.statusText}`);
     }
   }
 

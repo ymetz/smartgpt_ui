@@ -29,7 +29,6 @@ export const CustomOptions: FC<Props> = ({
     selectedConversation?.model?.id || models[0].id,
   );
 
-  // set plugin from default mode
   useEffect(() => {
     if (promptMode === 'default') {
       setOptions([]);
@@ -39,6 +38,20 @@ export const CustomOptions: FC<Props> = ({
       setOptions(plugin?.additionalOptions ?? []);
     }
   }, [promptMode]);
+
+  useEffect(() => {
+    if (selectedConversation?.options) {
+      setOptions(selectedConversation?.options);
+    } else {
+      if (promptMode === 'default') {
+        setOptions([]);
+      } else {
+        const plugin = FullPluginList.find((plugin) => plugin.id === promptMode);
+  
+        setOptions(plugin?.additionalOptions ?? []);
+      }
+    }
+  }, [selectedConversation]);
 
   const getInputField = (option: PluginOption) => {
     if (option.key === 'SMARTGPT_FOLLOWUP_MODEL') {
@@ -111,6 +124,8 @@ export const CustomOptions: FC<Props> = ({
             overflow: `auto`,
           }}
           type="number"
+          min={1}
+          max={11}
           value={option.value as number}
           onChange={(e) => {
             const newOptions = options.map((o) => {

@@ -1,21 +1,19 @@
 import { FC } from 'react';
-
-import { Prompt } from '@/types/prompt';
-
 import { PromptComponent } from './Prompt';
+import { Conversation } from '@/types/chat';
 
 interface Props {
-  prompts: Prompt[];
+  templates: Conversation[];
 }
 
-export const Prompts: FC<Props> = ({ prompts }) => {
+export const Prompts: FC<Props> = ({ templates }) => {
   return (
     <div className="flex w-full flex-col gap-1">
-      {prompts
+      {templates
         .slice()
         .reverse()
-        .map((prompt, index) => (
-          <PromptComponent key={index} prompt={prompt} />
+        .map((template, index) => (
+          <PromptComponent key={index} template={template} />
         ))}
     </div>
   );

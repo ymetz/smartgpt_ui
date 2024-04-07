@@ -36,7 +36,7 @@ export function cleanData(data: SupportedExportFormats): LatestExportFormat {
       version: 4,
       history: cleanConversationHistory(data),
       folders: [],
-      prompts: [],
+      savedTemplates: [],
     };
   }
 
@@ -49,12 +49,12 @@ export function cleanData(data: SupportedExportFormats): LatestExportFormat {
         name: chatFolder.name,
         type: 'chat',
       })),
-      prompts: [],
+      savedTemplates: [],
     };
   }
 
   if (isExportFormatV3(data)) {
-    return { ...data, version: 4, prompts: [] };
+    return { ...data, version: 4, savedTemplates: []};
   }
 
   if (isExportFormatV4(data)) {
@@ -74,7 +74,7 @@ function currentDate() {
 export const exportData = () => {
   let history = localStorage.getItem('conversationHistory');
   let folders = localStorage.getItem('folders');
-  let prompts = localStorage.getItem('prompts');
+  let savedTemplates = localStorage.getItem('savedTemplates');
 
   if (history) {
     history = JSON.parse(history);
@@ -84,15 +84,15 @@ export const exportData = () => {
     folders = JSON.parse(folders);
   }
 
-  if (prompts) {
-    prompts = JSON.parse(prompts);
+  if (savedTemplates) {
+    savedTemplates = JSON.parse(savedTemplates);
   }
 
   const data = {
     version: 4,
     history: history || [],
     folders: folders || [],
-    prompts: prompts || [],
+    savedTemplates: savedTemplates || [],
   } as LatestExportFormat;
 
   const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -112,7 +112,7 @@ export const exportData = () => {
 export const importData = (
   data: SupportedExportFormats,
 ): LatestExportFormat => {
-  const { history, folders, prompts } = cleanData(data);
+  const { history, folders, savedTemplates } = cleanData(data);
 
   const oldConversations = localStorage.getItem('conversationHistory');
   const oldConversationsParsed = oldConversations
@@ -147,18 +147,18 @@ export const importData = (
   );
   localStorage.setItem('folders', JSON.stringify(newFolders));
 
-  const oldPrompts = localStorage.getItem('prompts');
+  const oldPrompts = localStorage.getItem('savedTemplates');
   const oldPromptsParsed = oldPrompts ? JSON.parse(oldPrompts) : [];
-  const newPrompts: Prompt[] = [...oldPromptsParsed, ...prompts].filter(
+  const newSavedTemplates: Conversation[] = [...oldPromptsParsed, ...savedTemplates].filter(
     (prompt, index, self) =>
       index === self.findIndex((p) => p.id === prompt.id),
   );
-  localStorage.setItem('prompts', JSON.stringify(newPrompts));
+  localStorage.setItem('savedTemplates', JSON.stringify(newSavedTemplates));
 
   return {
     version: 4,
     history: newHistory,
     folders: newFolders,
-    prompts: newPrompts,
+    savedTemplates: newSavedTemplates,
   };
 };

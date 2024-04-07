@@ -12,7 +12,7 @@ export interface LocalStorage {
   // added folders (3/23/23)
   folders: FolderInterface[];
   // added prompts (3/26/23)
-  prompts: Prompt[];
+  savedTemplates: Conversation[];
   // added showChatbar and showPromptbar (3/26/23)
   showChatbar: boolean;
   showPromptbar: boolean;

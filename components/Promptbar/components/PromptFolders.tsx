@@ -15,31 +15,31 @@ export const PromptFolders = () => {
   } = useContext(HomeContext);
 
   const {
-    state: { searchTerm, filteredPrompts },
-    handleUpdatePrompt,
+    state: { searchTerm, filteredTemplates },
+    handleUpdateTemplate,
   } = useContext(PromptbarContext);
 
   const handleDrop = (e: any, folder: FolderInterface) => {
     if (e.dataTransfer) {
-      const prompt = JSON.parse(e.dataTransfer.getData('prompt'));
+      const prompt = JSON.parse(e.dataTransfer.getData('template'));
 
-      const updatedPrompt = {
+      const updatedTemplate = {
         ...prompt,
         folderId: folder.id,
       };
 
-      handleUpdatePrompt(updatedPrompt);
+      handleUpdateTemplate(updatedTemplate);
     }
   };
 
   const PromptFolders = (currentFolder: FolderInterface) =>
-    filteredPrompts
+  filteredTemplates
       .filter((p) => p.folderId)
-      .map((prompt, index) => {
-        if (prompt.folderId === currentFolder.id) {
+      .map((template, index) => {
+        if (template.folderId === currentFolder.id) {
           return (
             <div key={index} className="ml-5 gap-2 border-l pl-2">
-              <PromptComponent prompt={prompt} />
+              <PromptComponent template={template} />
             </div>
           );
         }
