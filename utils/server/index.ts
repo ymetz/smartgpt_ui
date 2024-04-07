@@ -12,28 +12,24 @@ import { AnthropicModel } from '@/types/anthropic';
 
 export class OpenAIError extends Error {
   type: string;
-  param: string;
   code: string;
 
-  constructor(message: string, type: string, param: string, code: string) {
+  constructor(message: string, type: string, code: string) {
     super(message);
     this.name = 'OpenAIError';
     this.type = type;
-    this.param = param;
     this.code = code;
   }
 }
 
 export class AnthropicError extends Error {
   type: string;
-  param: string;
   code: string;
 
-  constructor(message: string, type: string, param: string, code: string) {
+  constructor(message: string, type: string, code: string) {
     super(message);
     this.name = 'AnthropicError';
     this.type = type;
-    this.param = param;
     this.code = code;
   }
 }
@@ -86,10 +82,10 @@ export const OpenAIStream = async (
   if (res.status !== 200) {
     const result = await res.json();
     if (result.error) {
+      console.log(result.error);
       throw new OpenAIError(
         result.error.message,
         result.error.type,
-        result.error.param,
         result.error.code,
       );
     } else {
@@ -179,7 +175,6 @@ export const AnthropicStream = async (
       throw new AnthropicError(
         result.error.message,
         result.error.type,
-        result.error.param,
         result.error.code,
       );
     } else {

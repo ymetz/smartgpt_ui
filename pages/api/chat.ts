@@ -86,7 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     return new Response(stream);
   } catch (error) {
-    console.error(error);
+    console.log(error, error instanceof OpenAIError, error instanceof AnthropicError);
     if (error instanceof OpenAIError) {
       return new Response('Error', { status: 500, statusText: error.message });
     } else if (error instanceof AnthropicError) {

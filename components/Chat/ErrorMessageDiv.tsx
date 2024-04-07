@@ -13,7 +13,7 @@ export const ErrorMessageDiv: FC<Props> = ({ error }) => {
       <div className="mb-5">
         <IconCircleX size={36} />
       </div>
-      <div className="mb-3 text-2xl font-medium">{error.title}</div>
+      <div className="mb-3 text-2xl font-medium">{error.code}</div>
       {error.messageLines.map((line, index) => (
         <div key={index} className="text-center">
           {' '}
