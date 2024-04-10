@@ -122,13 +122,13 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     // send initial system prompt back to the client
-    processStreamAndGetText(null, Promise.resolve([]), false, `### System Prompt:\n${initialSystemPrompt}\n\n### Initial GPT Answers (${numInitialAsks} Asks, Model: ${model?.id || 'unknown model'}):\n`);
+    processStreamAndGetText(null, Promise.resolve([]), false, `### Initial GPT Answers (${numInitialAsks} Asks, Model: ${model?.id || 'unknown model'}):\n`);
 
     // ASK phase
     /*const initialAskPromises = Array.from({ length: numInitialAsks }, () => processStreamAndGetText(model, messagesToSendPromise));
     const initialResponseTexts = Promise.all(initialAskPromises);*/
     // for the initial asks, we want to attach the index of the ask to the response so we can identify it later
-    const initialAskPromises = Array.from({ length: numInitialAsks }, (_, i) => processStreamAndGetText(model, messagesToSendPromise, true, `\n#### Answer:\n`));
+    const initialAskPromises = Array.from({ length: numInitialAsks }, (_, i) => processStreamAndGetText(model, messagesToSendPromise, true, `\n#### Answer ${i}:\n`));
     const initialResponseTexts = Promise.all(initialAskPromises);
 
     // Process the initial response text to prepare messages for the researcher phase
