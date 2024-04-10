@@ -10,7 +10,7 @@ export enum OpenAIModelID {
   GPT_3_5_AZ = 'gpt-35-turbo',
   GPT_4 = 'gpt-4-0613',
   GPT_4_32K = 'gpt-4-32k',
-  GPT_4_TURBO = 'gpt-4-0125-preview',
+  GPT_4_TURBO = 'gpt-4-turbo',
 }
 
 // in case the `DEFAULT_MODEL` environment variable is not set or set to an unsupported model

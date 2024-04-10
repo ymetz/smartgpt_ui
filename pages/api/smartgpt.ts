@@ -130,12 +130,12 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     // send initial system prompt back to the client
-    processStreamAndGetText(null, Promise.resolve([]), false, `### System Prompt:\n${initialSystemPrompt}\n\n### Initial GPT Answers (${numInitialAsks} Asks, Model: ${model?.id || 'unknown model'}):\n`, 0);
+    processStreamAndGetText(null, Promise.resolve([]), false, `### Initial GPT Answers (${numInitialAsks} Asks, Model: ${model?.id || 'unknown model'}):\n`, 0);
 
     // ASK phase
     // Process the initial asks in parallel, however, we can add a timeout for the claude model to avoid rate limiting
-    const perModelTimeout = model.id.includes('claude') ? 2000 : 0
-    const initialAskPromises = Array.from({ length: numInitialAsks }, (_, i) => processStreamAndGetText(model, messagesToSendPromise, true, `\n#### Answer:\n`, i * 1200));
+    const perModelTimeout = model.id.includes('claude') ? 2000 : 0;
+    const initialAskPromises = Array.from({ length: numInitialAsks }, (_, i) => processStreamAndGetText(model, messagesToSendPromise, true, `\n#### Answer ${i+1}:\n`, i * perModelTimeout));
     // if an error is thrown, just ignore it and continue with the successful responses
     let initialResponseTexts: Promise<string[]> =  Promise.allSettled(initialAskPromises).then((results) => results.filter((result) => result.status === 'fulfilled').map((result) => (result as PromiseFulfilledResult<string>).value));
     // Process the initial response text to prepare messages for the researcher phase
