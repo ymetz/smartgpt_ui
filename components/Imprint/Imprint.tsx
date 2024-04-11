@@ -56,7 +56,7 @@ const FAQ = () => {
       </p>
       <p><b>Will you do another benchmark run?</b></p>
       <p>
-      If we get funding, then yes. Likely not the MMLU though, as it's a bit broken, but maybe the GSM8K.
+      If we get funding, then yes. Likely not the MMLU though, as it&#39;s a bit broken, but maybe the GSM8K.
       </p>
     </div>
   );
