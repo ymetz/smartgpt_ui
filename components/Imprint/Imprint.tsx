@@ -56,7 +56,7 @@ const FAQ = () => {
       </p>
       <p><b>Will you do another benchmark run?</b></p>
       <p>
-      If we get funding, then yes. Likely not the MMLU though, as it&#39;s a bit broken, but maybe the GSM8K.
+      If we get funding, then yes. Likely not the MMLU though, as it&#39;s a bit broken, but maybe the GSM8K
       </p>
     </div>
   );
@@ -225,63 +225,63 @@ const PrivacyPolicy = () => {
         </ul>
       </div>
     </div>
-  );
+      );
 };
 
-interface Props {
-  open: boolean;
+      interface Props {
+        open: boolean;
   onClose: () => void;
 }
 
-export const Imprint: FC<Props> = ({ open, onClose }) => {
+      export const Imprint: FC<Props> = ({open, onClose}) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        window.addEventListener('mouseup', handleMouseUp);
+            window.addEventListener('mouseup', handleMouseUp);
       }
     };
 
     const handleMouseUp = (e: MouseEvent) => {
-      window.removeEventListener('mouseup', handleMouseUp);
-      onClose();
+            window.removeEventListener('mouseup', handleMouseUp);
+          onClose();
     };
 
-    window.addEventListener('mousedown', handleMouseDown);
+          window.addEventListener('mousedown', handleMouseDown);
 
     return () => {
-      window.removeEventListener('mousedown', handleMouseDown);
+            window.removeEventListener('mousedown', handleMouseDown);
     };
   }, [onClose]);
 
-  if (!open) {
+          if (!open) {
     return <></>;
   }
 
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="fixed inset-0 z-10 overflow-hidden">
-        <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-          <div
-            className="hidden sm:inline-block sm:h-screen sm:align-middle"
-            aria-hidden="true"
-          />
+          return (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="fixed inset-0 z-10 overflow-hidden">
+              <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div
+                  className="hidden sm:inline-block sm:h-screen sm:align-middle"
+                  aria-hidden="true"
+                />
 
-          <div
-            ref={modalRef}
-            className="dark:border-netural-400 inline-block max-h-[400px] transform overflow-y-auto rounded-lg border border-gray-300 bg-white px-4 pt-5 pb-4 text-left align-bottom shadow-xl transition-all dark:bg-[#212F3C] sm:my-8 sm:max-h-[600px] sm:w-full sm:max-w-lg sm:p-6 sm:align-middle"
-            role="dialog"
-          >
-            <div className="flex flex-col items-center space-y-4">
-              <Disclaimer />
-              <FAQ />
-              <ImprintNotice /> {/* Fix component name reference */}
-              <PrivacyPolicy />
+                <div
+                  ref={modalRef}
+                  className="dark:border-netural-400 inline-block max-h-[400px] transform overflow-y-auto rounded-lg border border-gray-300 bg-white px-4 pt-5 pb-4 text-left align-bottom shadow-xl transition-all dark:bg-[#212F3C] sm:my-8 sm:max-h-[600px] sm:w-full sm:max-w-lg sm:p-6 sm:align-middle"
+                  role="dialog"
+                >
+                  <div className="flex flex-col items-center space-y-4">
+                    <Disclaimer />
+                    <FAQ />
+                    <ImprintNotice /> {/* Fix component name reference */}
+                    <PrivacyPolicy />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  );
+          );
 };
