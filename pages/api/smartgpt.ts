@@ -115,13 +115,6 @@ const handler = async (req: Request): Promise<Response> => {
         textContent += text;
       }
 
-      if (waitForDone) {
-        if (prependString) {
-          writer.write(new TextEncoder().encode(prependString));
-        }
-        writer.write(new TextEncoder().encode(textContent));
-      }
-
       if (closeWriter) {
         writer.close();
       }
@@ -138,18 +131,24 @@ const handler = async (req: Request): Promise<Response> => {
     const initialAskPromises = Array.from({ length: numInitialAsks }, (_, i) => processStreamAndGetText(model, messagesToSendPromise, true, `\n#### Answer ${i+1}:\n`, i * perModelTimeout));
     // if an error is thrown, just ignore it and continue with the successful responses
     let initialResponseTexts: Promise<string[]> =  Promise.allSettled(initialAskPromises).then((results) => results.filter((result) => result.status === 'fulfilled').map((result) => (result as PromiseFulfilledResult<string>).value));
+    // once all initial responses are ready, we can write them to the stream
+    initialResponseTexts.then((responses) => {
+      responses.forEach((response, idx) => {
+        writer.write(new TextEncoder().encode(`\n #### Answer ${idx + 1}:\n ${response}\n\n`));
+      });
+    });
     // Process the initial response text to prepare messages for the researcher phase
     const researcherMessages = prepareResearcherMessages(originalRequests, initialResponseTexts, numInitialAsks, researcherPrompt, assistantPrompt);
 
     // RESEARCHER phase
-    const researcherResponsePromise = processStreamAndGetText(followUpModel, researcherMessages, false, `\n### Researcher Prompt  (Model: ${followUpModel?.id || 'unknown model'}):\n${substituteNumAsks(researcherPrompt, numInitialAsks)}\n\n### Researcher Response:\n`,  0);
+    const researcherResponsePromise = processStreamAndGetText(followUpModel, researcherMessages, false, `\n### Researcher Response (Model: ${followUpModel?.id || 'unknown model'}): \n`,  0);
 
     // Assuming you have a function to prepare messages for the resolver phase
     // RESOLVER phase could be similar to the RESEARCHER phase, based on your application logic
     const resolverMessagesPromise = prepareResolverMessages(originalRequests, researcherResponsePromise, initialResponseTexts, numInitialAsks, resolverPrompt, assistantPrompt);
 
     // Send the resolver messages to the model
-    processStreamAndGetText(followUpModel, resolverMessagesPromise, false, `\n### Resolver Prompt (Model: ${followUpModel?.id || 'unknown model'}):\n${substituteNumAsks(resolverPrompt, numInitialAsks)}\n\n### Resolver Response:\n`, 0, true);
+    processStreamAndGetText(followUpModel, resolverMessagesPromise, false, `\n### Resolver Response (Model: ${followUpModel?.id || 'unknown model'}):\n`, 0, true);
 
     return new Response(transformStream.readable, {
       headers: {
