@@ -317,7 +317,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
             &#129504; SmartGPT
           </div>
           <div className="text-center text-lg text-black dark:text-white">
-            <div className="mb-8">{`SmartGPT: Improved reasoning .`}</div>
+            <div className="mb-8">{`SmartGPT 2.0: Mixed Models, Better Reasoning.`}</div>
           </div>
           <div className="text-center text-gray-500 dark:text-gray-400">
             <div className="mb-2">
@@ -326,20 +326,40 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
               techniques.
             </div>
             <div className="mb-2">
-              {t(
-                'Please set at least an OpenAI key or an Antrophic key in the bottom left of the sidebar. For full functionality, both keys are necessary. None of your API keys are stored on the server, they are only persisted in local browser storage.',
-              )}
-            </div>
-            <div>
-              {t("If you don't have an OpenAI API key, you can get one here: ")}
-              <a
-                href="https://platform.openai.com/account/api-keys"
+              <p>Please put in an API key from <a
+                href="https://platform.openai.com/api-keys"
                 target="_blank"
                 rel="noreferrer"
                 className="text-blue-500 hover:underline"
-              >
-                openai.com
-              </a>
+              >OpenAI</a> and/or <a
+              href="https://console.anthropic.com/"
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-500 hover:underline"
+            >Anthropic</a> to get started. 
+                If you have never done so before, don’t be intimidated, it is doable in &#60; 1 min if you have a log-in already (for ChatGPT), &#60; 2 mins otherwise. 
+                Be sure to have funds in your account or otherwise SmartGPT will freak out and whinge!
+              </p>
+              </div>
+            <div className="mb-2">
+              <p>
+                If you want a 1 min walkthrough of getting an API key, here it is: <a
+                href="https://www.youtube.com/watch?v=OB99E7Y1cMA"
+                target="_blank"
+                rel="noreferrer"
+                className="text-blue-500 hover:underline"
+              >https://www.youtube.com/watch?v=OB99E7Y1cMA</a>
+              </p>
+              </div>
+              <div className="mb-2">
+              <p>
+                None of your API keys are stored on the server, they are only persisted in local browser storage.
+              </p>
+            </div>
+            <div className="mb-2">
+              <p>
+                Enjoy, and let’s explore what’s possible in AI reasoning together.
+              </p>
             </div>
           </div>
         </div>
@@ -361,7 +381,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                         <Spinner size="16px" className="mx-auto" />
                       </div>
                     ) : (
-                      '🧠 SmartGPT'
+                      '🧠 SmartGPT 2.0'
                     )}
                   </div>
 
