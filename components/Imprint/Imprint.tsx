@@ -26,22 +26,38 @@ const FAQ = () => {
   return (
     <div className="flex flex-col items-center space-y-4">
       <h1 className="text-2xl font-semibold">{t('FAQ')}</h1>
-      <p>{t('What is SmartGPT?')}</p>
+      <p><b>{t('What is SmartGPT?')}</b></p>
       <p>
-        {t(
-          'SmartGPT is a research prototype that uses GPT from OpenAI and Claude from Anthropic to generate text based on user input.',
-        )}
+        SmartGPT 2.0 is a community project to leverage proven prompting principles to get you smarter answers. The original SmartGPT scored an unofficial 89.0% on the MMLU and exposed hundreds of errors in the test, gaining almost a million views on social media and the attention of the top AGI labs.
       </p>
-      <p>{t('How does SmartGPT work?')}</p>
-      <p>{t('SmartGPT uses a multi-prompt approach.')}</p>
-      <p>{t('Are my API keys and personal data safe?')}</p>
       <p>
-        {t(
-          'SmartGPT does not store any API keys or personal data. Storage is done via your browsers local storage. We want to note that comes with its own risks (https://www.horangi.com/blog/misuse-of-local-storage). We are working on a better solution.',
-        )}
+        Asking the models multiple times, and picking the best of the outputs, is a known technique, called self-consistency, that is embedded here.
+        Getting a model to ‘reflect’ and improve its own output is more of an ‘emergent ability’ seen only incipiently with the best models.
+        Overcoming tokenisation (the way models don’t see whole words) is one obvious advantage. Try getting a model to output a poem that has exactly two lines ending with the name of the month, and you’ll see why you need reflection. We have consulted with the lead author of the original Reflexion paper – Noah Shinn – and been inspired by that work.
       </p>
-      <p>{t('How can I contribute?')}</p>
-      <p>{t('We plan to open contribution options.')}</p>
+      <p>
+        Getting a different family of models, like Claude 3, to review the work of say GPT-4-Turbo, is highly experimental but works in many use cases.
+        SmartGPT 2.0 will be iterated on, and if you have insights into improvements, do make your voice heard – and potentially get a channel shout-out. We are looking to 1) make it multi-modal, and include files 2) bring in automatic prompt optimisation, so you don’t have to spend time iterating to find the best prompts.
+      </p>
+      <p>
+        This was and is a team effort, made not just through the ideas of me, Philip from AI Explained, in London but notably with the hard work of Yannick Metz, an ML PhD student in Konstanz, Germany. Inspiration was further taken from the incredible work of Joshua Stapleton, an ML engineer from South Africa, and Nicholas Schlaepfer, from UC Denver.
+      </p>
+      <p><b>How can I contribute ideas/improvements?</b></p>    
+      <p>
+        You can contribute ideas and improvements by opening an issue on the <a href="https://github.com/ymetz/smartgpt_ui">GitHub repository</a>.
+      </p>
+      <p><b>I sometimes get blank error messages, like a red cross?</b></p>
+      <p>
+        Likely you haven’t put the API keys in for both Anthropic and OpenAI. Other explanations would be a server glitch/timeout. In the second case, a page refresh should fix it.
+      </p>
+      <p><b>Code sometimes appears as all one block, why?</b></p>
+      <p>
+        This is a known issue, and we are working on a fix. Restarting the chat should fix it.
+      </p>
+      <p><b>Will you do another benchmark run?</b></p>
+      <p>
+      If we get funding, then yes. Likely not the MMLU though, as it's a bit broken, but maybe the GSM8K.
+      </p>
     </div>
   );
 };
@@ -209,63 +225,63 @@ const PrivacyPolicy = () => {
         </ul>
       </div>
     </div>
-      );
+  );
 };
 
-      interface Props {
-        open: boolean;
+interface Props {
+  open: boolean;
   onClose: () => void;
 }
 
-      export const Imprint: FC<Props> = ({open, onClose}) => {
+export const Imprint: FC<Props> = ({ open, onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-            window.addEventListener('mouseup', handleMouseUp);
+        window.addEventListener('mouseup', handleMouseUp);
       }
     };
 
     const handleMouseUp = (e: MouseEvent) => {
-            window.removeEventListener('mouseup', handleMouseUp);
-          onClose();
+      window.removeEventListener('mouseup', handleMouseUp);
+      onClose();
     };
 
-          window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousedown', handleMouseDown);
 
     return () => {
-            window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousedown', handleMouseDown);
     };
   }, [onClose]);
 
-          if (!open) {
+  if (!open) {
     return <></>;
   }
 
-          return (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="fixed inset-0 z-10 overflow-hidden">
-              <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                <div
-                  className="hidden sm:inline-block sm:h-screen sm:align-middle"
-                  aria-hidden="true"
-                />
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="fixed inset-0 z-10 overflow-hidden">
+        <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+          <div
+            className="hidden sm:inline-block sm:h-screen sm:align-middle"
+            aria-hidden="true"
+          />
 
-                <div
-                  ref={modalRef}
-                  className="dark:border-netural-400 inline-block max-h-[400px] transform overflow-y-auto rounded-lg border border-gray-300 bg-white px-4 pt-5 pb-4 text-left align-bottom shadow-xl transition-all dark:bg-[#212F3C] sm:my-8 sm:max-h-[600px] sm:w-full sm:max-w-lg sm:p-6 sm:align-middle"
-                  role="dialog"
-                >
-                  <div className="flex flex-col items-center space-y-4">
-                    <Disclaimer />
-                    <FAQ />
-                    <ImprintNotice /> {/* Fix component name reference */}
-                    <PrivacyPolicy />
-                  </div>
-                </div>
-              </div>
+          <div
+            ref={modalRef}
+            className="dark:border-netural-400 inline-block max-h-[400px] transform overflow-y-auto rounded-lg border border-gray-300 bg-white px-4 pt-5 pb-4 text-left align-bottom shadow-xl transition-all dark:bg-[#212F3C] sm:my-8 sm:max-h-[600px] sm:w-full sm:max-w-lg sm:p-6 sm:align-middle"
+            role="dialog"
+          >
+            <div className="flex flex-col items-center space-y-4">
+              <Disclaimer />
+              <FAQ />
+              <ImprintNotice /> {/* Fix component name reference */}
+              <PrivacyPolicy />
             </div>
           </div>
-          );
+        </div>
+      </div>
+    </div>
+  );
 };
