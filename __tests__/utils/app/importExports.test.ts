@@ -86,6 +86,7 @@ describe('cleanData Functions', () => {
       expect(isLatestExportFormat(obj)).toBe(true);
       expect(obj).toEqual({
         version: 4,
+        savedTemplates: [],
         history: [
           {
             id: 1,
@@ -141,6 +142,7 @@ describe('cleanData Functions', () => {
       expect(isLatestExportFormat(obj)).toBe(true);
       expect(obj).toEqual({
         version: 4,
+        savedTemplates: [],
         history: [
           {
             id: '1',
