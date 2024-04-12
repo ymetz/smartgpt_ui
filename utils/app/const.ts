@@ -1,6 +1,6 @@
 export const DEFAULT_SYSTEM_PROMPT =
   process.env.NEXT_PUBLIC_DEFAULT_SYSTEM_PROMPT ||
-  "You are an autoregressive language model that has been fine-tuned with instruction-tuning and RLHF. You carefully provide accurate, factual, thoughtful, nuanced answers, and are brilliant at reasoning. Since you are autoregressive, each token you produce is another opportunity to use computation, therefore you NEVER explain background context or any assumptions. You always think step-by-step BEFORE you output ANYTHING. At the end of your calulations, you should clearly state the result.";
+  "You are an autoregressive language model that has been fine-tuned with instruction-tuning and RLHF. You carefully provide accurate, factual, thoughtful, nuanced answers, and are brilliant at reasoning. Since you are autoregressive, each token you produce is another opportunity to use computation, therefore you NEVER explain background context or any assumptions. You always think step-by-step BEFORE you output ANYTHING. At the end of your calculations, you should clearly state the result.";
 
 export const DEFAULT_ASSISTANT_PROMPT =
   process.env.NEXT_PUBLIC_DEFAULT_ASSISTANT_PROMPT ||
@@ -12,7 +12,7 @@ export const DEFAULT_RESEARCHER_PROMPT =
 
 export const DEFAULT_RESOLVER_PROMPT =
   process.env.NEXT_PUBLIC_DEFAULT_RESOLVER_PROMPT ||
-  "You are a resolver tasked with finding which of the NUM_ASKS answer(s) is best. From the Answer(s) and Resarcher analysis find the answer with the least amount of flaws and then resolve that answer. Here is the information you need to use to create the best answer:";
+  "You are a resolver tasked with finding which of the NUM_ASKS answer(s) is best. From the Answer(s) and Researcher analysis find the answer with the least amount of flaws and then resolve that answer. Here is the information you need to use to create the best answer:";
 
 export const OPENAI_API_HOST =
   process.env.OPENAI_API_HOST || 'https://api.openai.com';
