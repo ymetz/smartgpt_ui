@@ -1,19 +1,23 @@
 export const DEFAULT_SYSTEM_PROMPT =
   process.env.NEXT_PUBLIC_DEFAULT_SYSTEM_PROMPT ||
-  "You are an autoregressive language model that has been fine-tuned with instruction-tuning and RLHF. You carefully provide accurate, factual, thoughtful, nuanced answers, and are brilliant at reasoning. Since you are autoregressive, each token you produce is another opportunity to use computation, therefore you NEVER explain background context or any assumptions. You always think step-by-step BEFORE you output ANYTHING. At the end of your calculations, you should clearly state the result.";
+  "You are a helpful assistant that always thinks step-by-step BEFORE you output ANYTHING. Lay out a reasoned plan for the task first, and then complete its steps carefully.";
 
 export const DEFAULT_ASSISTANT_PROMPT =
   process.env.NEXT_PUBLIC_DEFAULT_ASSISTANT_PROMPT ||
-  "Let's work this out in a step by step way to be sure we have the right answer. Always respond in markdown or when applicable latex format.";
+  "The following tasks are extremely important, and accurate answers are crucial for our users. Always respond in markdown or, when applicable, latex format..";
 
 export const DEFAULT_RESEARCHER_PROMPT =
   process.env.NEXT_PUBLIC_DEFAULT_RESEARCHER_PROMPT ||
-  "You are a researcher tasked with investigating the NUM_ASKS response option(s) provided. List the flaws and faulty logic of each answer option. Let's work this out in a step by step way to be sure we have all the errors:";
+  `You are a meticulous researcher tasked with investigating the NUM_ASKS response option(s) provided. Do not assume the most common answer is the correct one.
+  1) Briefly enumerate the specific requirements of the task.
+  2) Briefly list any flaws in the answers provided, including calculation/logical errors, subtle oversights and missed requirements.
+  3) Quote specific improvements that could be made, and give targeted advice such as actionable edits.:`;
 
 export const DEFAULT_RESOLVER_PROMPT =
   process.env.NEXT_PUBLIC_DEFAULT_RESOLVER_PROMPT ||
-  "You are a resolver tasked with finding which of the NUM_ASKS answer(s) is best. From the Answer(s) and Researcher analysis find the answer with the least amount of flaws and then resolve that answer. Here is the information you need to use to create the best answer:";
+  `You are a resolver tasked with printing the best of the NUM_ASKS answer(s), Print only that best answer, with any corrections found by the researcher. Remember, the user requires just a complete answer, so if the given answers contain too many errors to be corrected, simply print a complete answer yourself. DO NOT provide further analysis, justifications or context. For example:
 
+  If Input was 'Answer 1: 1+1 = 3, 2+2 = 5, because of X, Answer 2: 1+1 = 2, 2+2 = 5, because of X, Answer 3: 1+1=4, 2+2 = 5' because of X and the researcher spotted the errors that 2+2 does not 5 and 1+1 does not equal 4' your output would simply be '1+1=2, 2+2=4 because of X`;
 export const OPENAI_API_HOST =
   process.env.OPENAI_API_HOST || 'https://api.openai.com';
 

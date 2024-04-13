@@ -20,9 +20,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
 
     const googleRes = await fetch(
       `https://customsearch.googleapis.com/customsearch/v1?key=${
-        googleAPIKey ? googleAPIKey : process.env.GOOGLE_API_KEY
+        googleAPIKey
       }&cx=${
-        googleCSEId ? googleCSEId : process.env.GOOGLE_CSE_ID
+        googleCSEId
       }&q=${query}&num=5`,
     );
 
@@ -115,7 +115,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
     const answerRes = await fetch(`${OPENAI_API_HOST}/v1/chat/completions`, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${key ? key : process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${key}`,
         ...(process.env.OPENAI_ORGANIZATION && {
           'OpenAI-Organization': process.env.OPENAI_ORGANIZATION,
         }),
