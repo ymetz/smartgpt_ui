@@ -35,6 +35,7 @@ export const initialState: HomeInitialState = {
   apiKeys: {
     [Providers.OPENAI]: '',
     [Providers.ANTHROPIC]: '',
+    [Providers.GROQ]: '',
     [Providers.MISTRAL]: '',
     [Providers.GEMINI]: '',
   },
