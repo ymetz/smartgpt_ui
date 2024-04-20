@@ -20,8 +20,11 @@ export const OPENAI_API_HOST =
 export const ANTHROPIC_API_HOST =
   process.env.ANTHROPIC_API_HOST || 'https://api.anthropic.com';
 
+export const GROQ_API_HOST =
+    process.env.OPENAI_API_HOST || 'https://api.groq.com/openai';
+
 export const MISTRAL_API_HOST =
-  process.env.MISTRAL_API_HOST || 'https://api.mistral.ai/v1/chat/completions';
+  process.env.MISTRAL_API_HOST || 'https://api.mistral.ai';
 
 export const GEMINI_API_HOST =
   process.env.GEMINI_API_HOST || 'https://generativelanguage.googleapis.com/v1beta';

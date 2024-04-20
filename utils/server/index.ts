@@ -1,7 +1,14 @@
 import { Message } from '@/types/chat';
 import { OpenAIModel } from '@/types/openai';
 
-import { AZURE_DEPLOYMENT_ID, OPENAI_API_HOST, OPENAI_API_TYPE, OPENAI_API_VERSION, OPENAI_ORGANIZATION } from '../app/const';
+import {
+  ANTHROPIC_API_HOST,
+  AZURE_DEPLOYMENT_ID, GROQ_API_HOST,
+  OPENAI_API_HOST,
+  OPENAI_API_TYPE,
+  OPENAI_API_VERSION,
+  OPENAI_ORGANIZATION
+} from '../app/const';
 
 import {
   ParsedEvent,
@@ -9,6 +16,7 @@ import {
   createParser,
 } from 'eventsource-parser';
 import { AnthropicModel } from '@/types/anthropic';
+import {GroqModel} from "@/types/groq";
 
 export class OpenAIError extends Error {
   type: string;
@@ -29,6 +37,18 @@ export class AnthropicError extends Error {
   constructor(message: string, type: string, code: string) {
     super(message);
     this.name = 'AnthropicError';
+    this.type = type;
+    this.code = code;
+  }
+}
+
+export class GroqError extends Error {
+  type: string;
+  code: string;
+
+  constructor(message: string, type: string, code: string) {
+    super(message);
+    this.name = 'GroqError';
     this.type = type;
     this.code = code;
   }
@@ -144,7 +164,7 @@ export const AnthropicStream = async (
   messages: Message[],
   prependString?: string,
 ) => {
-  const url = 'https://api.anthropic.com/v1/messages';
+  const url = `${ANTHROPIC_API_HOST}/v1/messages`;
   
   const res = await fetch(url, {
     headers: {
@@ -199,6 +219,97 @@ export const AnthropicStream = async (
             }
           } catch (e) {
             controller.error(e);
+          }
+        }
+      };
+
+      const parser = createParser(onParse);
+
+      // prepend string
+      if (prependString) {
+        const queue = encoder.encode(prependString);
+        controller.enqueue(queue);
+      }
+
+      for await (const chunk of res.body as any) {
+        parser.feed(decoder.decode(chunk));
+      }
+    },
+  });
+
+  return stream;
+};
+
+export const GroqStream = async (
+    model: GroqModel,
+    systemPrompt: string,
+    temperature : number,
+    key: string,
+    messages: Message[],
+    prependString?: string,
+) => {
+  let url = `${GROQ_API_HOST}/v1/chat/completions`;
+
+  const res = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${key ? key : process.env.GROQ_API_KEY}`,
+    },
+    method: 'POST',
+    body: JSON.stringify({
+      model: model.id,
+      messages: [
+        {
+          role: 'system',
+          content: systemPrompt,
+        },
+        ...messages,
+      ],
+      max_tokens: model?.tokenLimit || 1000,
+      temperature: temperature,
+      stream: true,
+    }),
+  });
+
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+
+  if (res.status !== 200) {
+    const result = await res.json();
+    if (result.error) {
+      console.log(result.error);
+      throw new GroqError(
+          result.error.message,
+          result.error.type,
+          result.error.code,
+      );
+    } else {
+      throw new Error(
+          `Groq API returned an error: ${
+              decoder.decode(result?.value) || result.statusText
+          }`,
+      );
+    }
+  }
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      const onParse = (event: ParsedEvent | ReconnectInterval) => {
+        if (event.type === 'event') {
+          const data = event.data;
+          if (data != '[DONE]') {
+            try {
+              const json = JSON.parse(data);
+              if (json.choices[0].finish_reason != null) {
+                controller.close();
+                return;
+              }
+              const text = json.choices[0]?.delta?.content || '';
+              const queue = encoder.encode(text);
+              controller.enqueue(queue);
+            } catch (e) {
+              controller.error(e);
+            }
           }
         }
       };

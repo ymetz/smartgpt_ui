@@ -5,7 +5,7 @@ import {
   DEFAULT_RESOLVER_PROMPT,
   DEFAULT_SYSTEM_PROMPT,
 } from '@/utils/app/const';
-import { OpenAIStream, AnthropicStream, OpenAIError, AnthropicError } from '@/utils/server';
+import {OpenAIStream, AnthropicStream, GroqStream, OpenAIError, AnthropicError, GroqError} from '@/utils/server';
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai';
 import { AnthropicModel, AnthropicModelID, AnthropicModels } from '@/types/anthropic';
 import { ChatBody, Message } from '@/types/chat';
@@ -29,6 +29,7 @@ const handler = async (req: Request): Promise<Response> => {
       (await req.json()) as ChatBody;
     const openAIkey = keys[Providers.OPENAI];
     const anthropicKey = keys[Providers.ANTHROPIC];
+    const groqKey = keys[Providers.GROQ];
 
     await init((imports) => WebAssembly.instantiate(wasm, imports));
     const encoding = new Tiktoken(
@@ -92,6 +93,8 @@ const handler = async (req: Request): Promise<Response> => {
             stream = await OpenAIStream(model, initialSystemPrompt, temperatureToUse, openAIkey, await messages, undefined);
           } else if (model.id.includes('claude')) {
             stream = await AnthropicStream(model, initialSystemPrompt, temperatureToUse, anthropicKey, await messages, undefined);
+          } else if (model.name.includes('@Groq')) {
+            stream = await GroqStream(model, initialSystemPrompt, temperatureToUse, groqKey, await messages, undefined)
           }
         }
       } catch (error) {
@@ -156,15 +159,12 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error) {
-    if (error instanceof OpenAIError) {
-      return new Response('Error', { status: 500, statusText: error.message });
-    } else if (error instanceof AnthropicError) {
+    if (error instanceof OpenAIError || error instanceof AnthropicError || error instanceof GroqError) {
       return new Response('Error', { status: 500, statusText: error.message });
     } else {
       return new Response('Error', { status: 500 });
     }
   }
-  
 };
 
 export default handler;

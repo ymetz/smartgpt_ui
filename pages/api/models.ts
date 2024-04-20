@@ -11,6 +11,7 @@ import {
   AnthropicModels,
 } from '@/types/anthropic';
 import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai';
+import {GroqModels} from "@/types/groq";
 
 export const config = {
   runtime: 'edge',
@@ -40,6 +41,19 @@ const handler = async (req: Request): Promise<Response> => {
           })),
         ),
         { status: 200 },
+      );
+    } else if (provider === 'groq') {
+      if (key === '') {
+        return new Response(JSON.stringify({}), { status: 200 });
+      }
+      return new Response(
+          JSON.stringify(
+              Object.keys(GroqModels).map((key) => ({
+                id: key,
+                name: GroqModels[key as keyof typeof GroqModels].name,
+              })),
+          ),
+          { status: 200 },
       );
     } else if (provider === 'mistral') {
       url = 'https://api.mistral.com/models';
