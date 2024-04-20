@@ -1,14 +1,12 @@
-import { FC, useContext, useEffect, useReducer, useRef } from 'react';
-
+import { FC, useContext, useEffect, useRef } from 'react';
 import { useTranslation } from 'next-i18next';
-
 import { useCreateReducer } from '@/hooks/useCreateReducer';
-
 import { getSettings, saveSettings } from '@/utils/app/settings';
-
 import { Settings } from '@/types/settings';
-
 import HomeContext from '@/pages/api/home/home.context';
+import { Providers } from '@/types/plugin';
+import { Key } from '@/components/Settings/Key';
+import ChatbarContext from '@/components/Chatbar/Chatbar.context';
 
 interface Props {
   open: boolean;
@@ -24,6 +22,12 @@ export const SettingDialog: FC<Props> = ({ open, onClose }) => {
   const { dispatch: homeDispatch } = useContext(HomeContext);
   const modalRef = useRef<HTMLDivElement>(null);
 
+  const {
+    state: { apiKeys },
+  } = useContext(HomeContext);
+
+  const { handleApiKeyChange } = useContext(ChatbarContext);
+
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
@@ -31,7 +35,7 @@ export const SettingDialog: FC<Props> = ({ open, onClose }) => {
       }
     };
 
-    const handleMouseUp = (e: MouseEvent) => {
+    const handleMouseUp = () => {
       window.removeEventListener('mouseup', handleMouseUp);
       onClose();
     };
@@ -48,58 +52,98 @@ export const SettingDialog: FC<Props> = ({ open, onClose }) => {
     saveSettings(state);
   };
 
-  // Render nothing if the dialog is not open.
   if (!open) {
-    return <></>;
+    return null;
   }
 
-  // Render the dialog.
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="fixed inset-0 z-10 overflow-hidden">
-        <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-          <div
-            className="hidden sm:inline-block sm:h-screen sm:align-middle"
-            aria-hidden="true"
-          />
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="fixed inset-0 z-10 overflow-hidden">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div
+                className="hidden sm:inline-block sm:h-screen sm:align-middle"
+                aria-hidden="true"
+            />
 
-          <div
-            ref={modalRef}
-            className="dark:border-netural-400 inline-block max-h-[400px] transform overflow-y-auto rounded-lg border border-gray-300 bg-white px-4 pt-5 pb-4 text-left align-bottom shadow-xl transition-all dark:bg-[#212F3C] sm:my-8 sm:max-h-[600px] sm:w-full sm:max-w-lg sm:p-6 sm:align-middle"
-            role="dialog"
-          >
-            <div className="text-lg pb-4 font-bold text-black dark:text-neutral-200">
-              {t('Settings')}
-            </div>
-
-            <div className="text-sm font-bold mb-2 text-black dark:text-neutral-200">
-              {t('Theme')}
-            </div>
-
-            <select
-              className="w-full cursor-pointer bg-transparent p-2 text-neutral-700 dark:text-neutral-200"
-              value={state.theme}
-              onChange={(event) =>
-                dispatch({ field: 'theme', value: event.target.value })
-              }
+            <div
+                ref={modalRef}
+                className="inline-block w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all dark:bg-gray-800"
             >
-              <option value="dark">{t('Dark mode')}</option>
-              <option value="light">{t('Light mode')}</option>
-            </select>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                {t('Settings')}
+              </h2>
 
-            <button
-              type="button"
-              className="w-full px-4 py-2 mt-6 border rounded-lg shadow border-neutral-500 text-neutral-900 hover:bg-neutral-100 focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-300"
-              onClick={() => {
-                handleSave();
-                onClose();
-              }}
-            >
-              {t('Save')}
-            </button>
+              <div className="mb-6">
+                <label
+                    htmlFor="theme"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  {t('Theme')}
+                </label>
+                <select
+                    id="theme"
+                    className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
+                    value={state.theme}
+                    onChange={(event) =>
+                        dispatch({ field: 'theme', value: event.target.value })
+                    }
+                >
+                  <option value="dark">{t('Dark mode')}</option>
+                  <option value="light">{t('Light mode')}</option>
+                </select>
+              </div>
+
+              {apiKeys && (
+                  <>
+                    <Key
+                        modelName="OpenAI API Key"
+                        provider="openai"
+                        apiKey={apiKeys[Providers.OPENAI]}
+                        onApiKeyChange={(apiKey: string) =>
+                            handleApiKeyChange(Providers.OPENAI, apiKey)
+                        }
+                    />
+                    <Key
+                        modelName="Anthropic API Key"
+                        provider="anthropic"
+                        apiKey={apiKeys[Providers.ANTHROPIC] || ''}
+                        onApiKeyChange={(apiKey: string) =>
+                            handleApiKeyChange(Providers.ANTHROPIC, apiKey)
+                        }
+                    />
+                    <Key
+                        modelName="Groq API Key"
+                        provider="groq"
+                        apiKey={apiKeys[Providers.GROQ] || ''}
+                        onApiKeyChange={(apiKey: string) =>
+                            handleApiKeyChange(Providers.GROQ, apiKey)
+                        }
+                    />
+                  </>
+              )}
+
+              <div className="mt-8 flex justify-end space-x-4">
+                <button
+                    type="button"
+                    className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+                    onClick={onClose}
+                >
+                  {t('Cancel')}
+                </button>
+                <button
+                    type="button"
+                    className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    onClick={() => {
+                      handleSave();
+                      onClose();
+                    }}
+                >
+                  {t('Save')}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
   );
 };
