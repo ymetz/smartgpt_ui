@@ -77,6 +77,14 @@ export const ChatbarSettings = () => {
               handleApiKeyChange(Providers.ANTHROPIC, apiKey)
             }
           />
+            <Key
+                modelName="Groq API Key"
+                provider="groq"
+                apiKey={apiKeys[Providers.GROQ] || ''}
+                onApiKeyChange={(apiKey: string) =>
+                    handleApiKeyChange(Providers.GROQ, apiKey)
+                }
+            />
         </>
       )}
 
