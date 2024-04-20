@@ -13,6 +13,7 @@ import {
 } from "@/utils/app/const";
 import {createParser, ParsedEvent, ReconnectInterval} from "eventsource-parser";
 
+const UNKNOWN_MODEL_ERROR = "Error: Unknown Model ";
 
 export async function getStream(
     model: BaseModel,
@@ -25,7 +26,7 @@ export async function getStream(
         (value) => model.id.includes(value) || model.name.includes(value)
     );
     if (!provider) {
-        throw new Error("Error: Unknown Model");
+        throw new Error(UNKNOWN_MODEL_ERROR + model.name);
     }
     const modelSpecificStream = getStreamProvider(provider);
     const apiKey = apiKeys[provider];

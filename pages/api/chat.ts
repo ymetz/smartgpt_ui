@@ -14,6 +14,11 @@ export const config = {
   runtime: 'edge',
 };
 
+function createErrorResponse(message: string, error: unknown) {
+  const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+  return new Response(message, { status: 500, statusText: errorMessage });
+}
+
 const handler = async (req: Request): Promise<Response> => {
   try {
     const { model, messages, keys, prompt, temperature } =
@@ -61,7 +66,7 @@ const handler = async (req: Request): Promise<Response> => {
     try {
       stream = await getStream(model, promptToSend, temperatureToUse, keys, messagesToSend);
     } catch (error) {
-      return new Response('Error: Unknown Model', { status: 500, statusText: 'Unknown Model' });
+      return createErrorResponse('Error getting response stream', error);
     }
 
     return new Response(stream);
