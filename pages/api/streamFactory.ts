@@ -34,7 +34,6 @@ function getProviderFor(model: BaseModel): Providers {
         'claude': Providers.ANTHROPIC,
         'Groq': Providers.GROQ,
     };
-
     const provider = Object.keys(providersMapping).find(
         (key) => model.id.includes(key) || model.name.includes(key)
     );
@@ -185,6 +184,38 @@ async function createStream(
         );
     }
 
+    function handleAnthropicContentBlock(event: ParsedEvent, controller: ReadableStreamDefaultController<any>, data: string) {
+        try {
+            if (event.event === 'message_stop') {
+                controller.close();
+                return;
+            }
+            if (event.event === 'content_block_delta') {
+                const text = JSON.parse(data).delta.text;
+                const queue = encoder.encode(text);
+                controller.enqueue(queue);
+            }
+        } catch (e) {
+            controller.error(e);
+        }
+    }
+
+    function handleOpenaiContentBlock(data: string, controller: ReadableStreamDefaultController<any>) {
+        if (data === "[DONE]") {
+            controller.close();
+            return;
+        } else {
+            try {
+                const json = JSON.parse(data);
+                const text = json.choices[0]?.delta?.content || "";
+                const queue = encoder.encode(text);
+                controller.enqueue(queue);
+            } catch (e) {
+                controller.error(e);
+            }
+        }
+    }
+
     return new ReadableStream({
         async start(controller) {
             const onParse = (event: ParsedEvent | ReconnectInterval) => {
@@ -192,32 +223,9 @@ async function createStream(
                     const data = event.data;
 
                     if (provider == Providers.ANTHROPIC) {
-                        try {
-                            if (event.event === 'message_stop') {
-                                controller.close();
-                                return;
-                            }
-                            if (event.event === 'content_block_delta') {
-                                const text = JSON.parse(data).delta.text;
-                                const queue = encoder.encode(text);
-                                controller.enqueue(queue);
-                            }
-                        } catch (e) {
-                            controller.error(e);
-                        }
-
-                    } else if (data === "[DONE]") {
-                        controller.close();
-                        return;
-                    } else {
-                        try {
-                            const json = JSON.parse(data);
-                            const text = json.choices[0]?.delta?.content || "";
-                            const queue = encoder.encode(text);
-                            controller.enqueue(queue);
-                        } catch (e) {
-                            controller.error(e);
-                        }
+                        handleAnthropicContentBlock(event, controller, data);
+                    } else if  (provider == Providers.OPENAI || Providers.GROQ) {
+                        handleOpenaiContentBlock(data, controller);
                     }
                 }
             };
