@@ -1,21 +1,22 @@
 import {
-  DEFAULT_TEMPERATURE,
   DEFAULT_ASSISTANT_PROMPT,
   DEFAULT_RESEARCHER_PROMPT,
   DEFAULT_RESOLVER_PROMPT,
   DEFAULT_SYSTEM_PROMPT,
+  DEFAULT_TEMPERATURE,
 } from '@/utils/app/const';
-import {OpenAIStream, AnthropicStream, GroqStream, OpenAIError, AnthropicError, GroqError} from '@/utils/server';
-import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai';
-import { AnthropicModel, AnthropicModelID, AnthropicModels } from '@/types/anthropic';
-import { ChatBody, Message } from '@/types/chat';
-import { Providers } from '@/types/plugin';
+import {AnthropicError, GroqError, OpenAIError} from '@/utils/server/errors';
+import {OpenAIModelID, OpenAIModels} from '@/types/openai';
+import {AnthropicModelID, AnthropicModels} from '@/types/anthropic';
+import {ChatBody, Message} from '@/types/chat';
+import {Providers} from '@/types/plugin';
 
 // @ts-expect-error
 import wasm from '../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module';
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json';
-import { Tiktoken, init } from '@dqbd/tiktoken/lite/init';
-import { A } from 'vitest/dist/types-fafda418';
+import {init, Tiktoken} from '@dqbd/tiktoken/lite/init';
+import {getStream} from "@/pages/api/streamFactory";
+import {BaseModel} from "@/types/BaseModel";
 
 const AllModels = { ...OpenAIModels, ...AnthropicModels };
 
@@ -47,11 +48,11 @@ const handler = async (req: Request): Promise<Response> => {
     const prompt_tokens = encoding.encode(initialSystemPrompt);
     let tokenCount = prompt_tokens.length;
     let followUpModelId = options?.find((op) => op.key == 'SMARTGPT_FOLLOWUP_MODEL')?.value as string;
-    let followUpModel: OpenAIModel | AnthropicModel;
+    let followUpModel: BaseModel;
     if (!followUpModelId || followUpModelId === '') {
         followUpModel = model;
     } else {
-        followUpModel = AllModels[followUpModelId as OpenAIModelID | AnthropicModelID] as OpenAIModel | AnthropicModel;
+        followUpModel = AllModels[followUpModelId as OpenAIModelID | AnthropicModelID] as BaseModel;
       }
     
     let messagesToSend: Message[] = [];
@@ -81,7 +82,8 @@ const handler = async (req: Request): Promise<Response> => {
     const writer = transformStream.writable.getWriter();
 
     // Function to process stream and return its text content
-    const processStreamAndGetText = async (model: OpenAIModel | AnthropicModel | null, messages: Promise<Message[]>, waitForDone: boolean = false, prependString?: string, rateLimitWait?: number, closeWriter: boolean = false): Promise<string> => {
+    const processStreamAndGetText = async (model: BaseModel | null, messages: Promise<Message[]>, waitForDone: boolean = false, prependString?: string, rateLimitWait?: number, closeWriter: boolean = false): Promise<string> => {
+
       let stream;
       let textContent = '';
       try {
@@ -89,17 +91,16 @@ const handler = async (req: Request): Promise<Response> => {
           await new Promise((resolve) => setTimeout(resolve, rateLimitWait));
         }
         if (model) {
-          if (model.id.includes('gpt')) {
-            stream = await OpenAIStream(model, initialSystemPrompt, temperatureToUse, openAIkey, await messages, undefined);
-          } else if (model.id.includes('claude')) {
-            stream = await AnthropicStream(model, initialSystemPrompt, temperatureToUse, anthropicKey, await messages, undefined);
-          } else if (model.name.includes('@Groq')) {
-            stream = await GroqStream(model, initialSystemPrompt, temperatureToUse, groqKey, await messages, undefined)
-          }
+          stream = await getStream(model, initialSystemPrompt, temperatureToUse, {
+            gpt: openAIkey,
+            claude: anthropicKey,
+            '@Groq': groqKey,
+          }, await messages);
         }
       } catch (error) {
         throw error;
       }
+
       if (prependString && !waitForDone) {
         // we can just have a prepend string, just return it as is
           writer.write(new TextEncoder().encode(prependString));
