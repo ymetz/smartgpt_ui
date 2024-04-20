@@ -1,5 +1,7 @@
-import {ApiKeys, PluginOption} from './plugin';
+import {PluginOption} from './plugin';
 import {BaseModel} from "@/types/BaseModel";
+
+import {ApiKeys} from "@/types/providers";
 
 export interface Message {
   role: Role;

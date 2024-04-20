@@ -3,9 +3,10 @@ import {Conversation, Message} from '@/types/chat';
 import {ErrorMessage} from '@/types/error';
 import {FolderInterface} from '@/types/folder';
 import {OpenAIModelID} from '@/types/openai';
-import {ApiKeys, PluginKey, Providers} from '@/types/plugin';
+import {PluginKey} from '@/types/plugin';
 import {Template} from '@/types/template';
 import {BaseModel} from "@/types/BaseModel";
+import {ApiKeys, Providers} from "@/types/providers";
 
 export interface HomeInitialState {
   apiKeys: ApiKeys;

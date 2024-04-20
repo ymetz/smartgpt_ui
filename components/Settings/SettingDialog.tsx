@@ -1,12 +1,12 @@
-import { FC, useContext, useEffect, useRef } from 'react';
-import { useTranslation } from 'next-i18next';
-import { useCreateReducer } from '@/hooks/useCreateReducer';
-import { getSettings, saveSettings } from '@/utils/app/settings';
-import { Settings } from '@/types/settings';
+import {FC, useContext, useEffect, useRef} from 'react';
+import {useTranslation} from 'next-i18next';
+import {useCreateReducer} from '@/hooks/useCreateReducer';
+import {getSettings, saveSettings} from '@/utils/app/settings';
+import {Settings} from '@/types/settings';
 import HomeContext from '@/pages/api/home/home.context';
-import { Providers } from '@/types/plugin';
-import { Key } from '@/components/Settings/Key';
+import {Key} from '@/components/Settings/Key';
 import ChatbarContext from '@/components/Chatbar/Chatbar.context';
+import {Providers} from "@/types/providers";
 
 interface Props {
   open: boolean;

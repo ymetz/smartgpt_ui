@@ -9,7 +9,6 @@ import {AnthropicError, GroqError, OpenAIError} from '@/utils/server/errors';
 import {OpenAIModelID, OpenAIModels} from '@/types/openai';
 import {AnthropicModelID, AnthropicModels} from '@/types/anthropic';
 import {ChatBody, Message} from '@/types/chat';
-import {Providers} from '@/types/plugin';
 
 // @ts-expect-error
 import wasm from '../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module';
@@ -28,10 +27,6 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { model, messages, keys, prompt, temperature, options } =
       (await req.json()) as ChatBody;
-    const openAIkey = keys[Providers.OPENAI];
-    const anthropicKey = keys[Providers.ANTHROPIC];
-    const groqKey = keys[Providers.GROQ];
-
     await init((imports) => WebAssembly.instantiate(wasm, imports));
     const encoding = new Tiktoken(
       tiktokenModel.bpe_ranks,
@@ -91,11 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
           await new Promise((resolve) => setTimeout(resolve, rateLimitWait));
         }
         if (model) {
-          stream = await getStream(model, initialSystemPrompt, temperatureToUse, {
-            gpt: openAIkey,
-            claude: anthropicKey,
-            '@Groq': groqKey,
-          }, await messages);
+          stream = await getStream(model, initialSystemPrompt, temperatureToUse, keys, await messages);
         }
       } catch (error) {
         throw error;

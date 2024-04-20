@@ -1,4 +1,7 @@
 import {Message} from "@/types/chat";
+import {BaseModel} from "@/types/BaseModel";
+
+import {Providers} from "@/types/providers";
 import {
     ANTHROPIC_API_HOST,
     AZURE_DEPLOYMENT_ID,
@@ -6,99 +9,40 @@ import {
     OPENAI_API_HOST,
     OPENAI_API_TYPE,
     OPENAI_API_VERSION,
-    OPENAI_ORGANIZATION,
+    OPENAI_ORGANIZATION
 } from "@/utils/app/const";
 import {createParser, ParsedEvent, ReconnectInterval} from "eventsource-parser";
-import {BaseModel} from "@/types/BaseModel";
 
-type ModelProvider = (
-    model: BaseModel,
-    prompt: string,
-    temperatureToUse: number,
-    apiKey: string,
-    messages: Message[]
-) => Promise<ReadableStream>;
-
-const modelProviders: Record<string, ModelProvider> = {
-    gpt: createOpenAIStream,
-    claude: createAnthropicStream,
-    "@Groq": createGroqStream,
-};
 
 export async function getStream(
     model: BaseModel,
     prompt: string,
     temperatureToUse: number,
-    apiKeys: Record<string, string>,
+    apiKeys: Record<Providers, string>,
     messages: Message[]
 ): Promise<ReadableStream> {
-    const provider = Object.keys(modelProviders).find(
-        (key) => model.id.includes(key) || model.name.includes(key)
+    const provider = Object.values(Providers).find(
+        (value) => model.id.includes(value) || model.name.includes(value)
     );
-
     if (!provider) {
         throw new Error("Error: Unknown Model");
     }
-
-    const createStream = modelProviders[provider];
+    const modelSpecificStream = getStreamProvider(provider);
     const apiKey = apiKeys[provider];
-    return createStream(model, prompt, temperatureToUse, apiKey, messages);
+    return modelSpecificStream(model, prompt, temperatureToUse, apiKey, messages);
 }
 
-async function createStream(
-    url: string,
-    headers: HeadersInit,
-    body: string,
-    prependString?: string
-): Promise<ReadableStream> {
-    const res = await fetch(url, {
-        headers,
-        method: "POST",
-        body,
-    });
-
-    const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
-
-    if (res.status !== 200) {
-        const result = await res.json();
-        throw new Error(
-            `API returned an error: ${decoder.decode(result?.value) || result.statusText}`
-        );
+export function getStreamProvider(provider: Providers) {
+    switch (provider) {
+        case Providers.OPENAI:
+            return createOpenAIStream;
+        case Providers.ANTHROPIC:
+            return createAnthropicStream;
+        case Providers.GROQ:
+            return createGroqStream;
+        default:
+            throw new Error('Invalid model provider');
     }
-
-    return new ReadableStream({
-        async start(controller) {
-            const onParse = (event: ParsedEvent | ReconnectInterval) => {
-                if (event.type === "event") {
-                    const data = event.data;
-                    if (data === "[DONE]") {
-                        controller.close();
-                        return;
-                    }
-                    try {
-                        const json = JSON.parse(data);
-                        const text = json.choices[0]?.delta?.content || "";
-                        const queue = encoder.encode(text);
-                        controller.enqueue(queue);
-                    } catch (e) {
-                        controller.error(e);
-                    }
-                }
-            };
-
-            const parser = createParser(onParse);
-
-            if (prependString) {
-                const queue = encoder.encode(prependString);
-                controller.enqueue(queue);
-            }
-
-            for await (const chunk of res.body as any) {
-                parser.feed(decoder.decode(chunk));
-            }
-        },
-    });
 }
 
 function createOpenAIStream(
@@ -127,7 +71,7 @@ function createOpenAIStream(
     };
 
     const body = JSON.stringify({
-        ...(OPENAI_API_TYPE === "openai" && { model: model.id }),
+        ...(OPENAI_API_TYPE === "openai" && {model: model.id}),
         messages: [
             {
                 role: "system",
@@ -200,4 +144,60 @@ function createGroqStream(
     });
 
     return createStream(url, headers, body);
+}
+
+async function createStream(
+    url: string,
+    headers: HeadersInit,
+    body: string,
+    prependString?: string
+): Promise<ReadableStream> {
+    const res = await fetch(url, {
+        headers,
+        method: "POST",
+        body,
+    });
+
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    if (res.status !== 200) {
+        const result = await res.json();
+        throw new Error(
+            `API returned an error: ${decoder.decode(result?.value) || result.statusText}`
+        );
+    }
+
+    return new ReadableStream({
+        async start(controller) {
+            const onParse = (event: ParsedEvent | ReconnectInterval) => {
+                if (event.type === "event") {
+                    const data = event.data;
+                    if (data === "[DONE]") {
+                        controller.close();
+                        return;
+                    }
+                    try {
+                        const json = JSON.parse(data);
+                        const text = json.choices[0]?.delta?.content || "";
+                        const queue = encoder.encode(text);
+                        controller.enqueue(queue);
+                    } catch (e) {
+                        controller.error(e);
+                    }
+                }
+            };
+
+            const parser = createParser(onParse);
+
+            if (prependString) {
+                const queue = encoder.encode(prependString);
+                controller.enqueue(queue);
+            }
+
+            for await (const chunk of res.body as any) {
+                parser.feed(decoder.decode(chunk));
+            }
+        },
+    });
 }

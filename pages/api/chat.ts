@@ -59,11 +59,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     let stream: any;
     try {
-      stream = await getStream(model, promptToSend, temperatureToUse, {
-        openai: keys.openai,
-        anthropic: keys.anthropic,
-        groq: keys.groq,
-      }, messagesToSend);
+      stream = await getStream(model, promptToSend, temperatureToUse, keys, messagesToSend);
     } catch (error) {
       return new Response('Error: Unknown Model', { status: 500, statusText: 'Unknown Model' });
     }
