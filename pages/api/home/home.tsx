@@ -46,6 +46,7 @@ import HomeContext from './home.context';
 import { HomeInitialState, initialState } from './home.state';
 
 import { v4 as uuidv4 } from 'uuid';
+import {GroqModelID} from "@/types/groq";
 
 interface Props {
   defaultModelId: OpenAIModelID | AnthropicModelID;
@@ -420,17 +421,17 @@ const Home = ({ defaultModelId }: Props) => {
     </HomeContext.Provider>
   );
 };
+
 export default Home;
 
 export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
   const defaultModelId =
     (process.env.DEFAULT_MODEL &&
       Object.keys(AllModels).includes(
-        process.env.DEFAULT_MODEL as OpenAIModelID | AnthropicModelID,
+        process.env.DEFAULT_MODEL as OpenAIModelID | AnthropicModelID | GroqModelID,
       ) &&
       process.env.DEFAULT_MODEL) ||
     fallbackModelID;
-
   return {
     props: {
       defaultModelId,

@@ -4,7 +4,6 @@ import { ErrorMessage } from '@/types/error';
 import { FolderInterface } from '@/types/folder';
 import { OpenAIModel, OpenAIModelID } from '@/types/openai';
 import { ApiKeys, PluginKey, Providers } from '@/types/plugin';
-import { Prompt } from '@/types/prompt';
 import { Template } from '@/types/template';
 
 export interface HomeInitialState {
