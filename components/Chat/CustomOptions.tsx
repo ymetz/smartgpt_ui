@@ -1,10 +1,6 @@
-import { FC, useContext, useEffect, useState } from 'react';
+import {FC, useContext, useEffect, useState} from 'react';
 
-import { useTranslation } from 'next-i18next';
-
-import { DEFAULT_PROMPT_MODE } from '@/utils/app/const';
-
-import { FullPluginList, Plugin, PluginOption } from '@/types/plugin';
+import {FullPluginList, PluginOption} from '@/types/plugin';
 
 import HomeContext from '@/pages/api/home/home.context';
 

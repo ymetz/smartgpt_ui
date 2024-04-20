@@ -22,15 +22,27 @@ export async function getStream(
     apiKeys: Record<Providers, string>,
     messages: Message[]
 ): Promise<ReadableStream> {
-    const provider = Object.values(Providers).find(
-        (value) => model.id.includes(value) || model.name.includes(value)
-    );
-    if (!provider) {
-        throw new Error(UNKNOWN_MODEL_ERROR + model.name);
-    }
+    const provider = getProviderFor(model);
     const modelSpecificStream = getStreamProvider(provider);
     const apiKey = apiKeys[provider];
-    return modelSpecificStream(model, prompt, temperatureToUse, apiKey, messages);
+    return modelSpecificStream(model, prompt, temperatureToUse, apiKey, messages, provider);
+}
+
+function getProviderFor(model: BaseModel): Providers {
+    const providersMapping: Record<string, Providers> = {
+        'gpt': Providers.OPENAI,
+        'claude': Providers.ANTHROPIC,
+        'Groq': Providers.GROQ,
+    };
+
+    const provider = Object.keys(providersMapping).find(
+        (key) => model.id.includes(key) || model.name.includes(key)
+    );
+    if (provider) {
+        return providersMapping[provider];
+    } else {
+        throw new Error(UNKNOWN_MODEL_ERROR + model.name);
+    }
 }
 
 export function getStreamProvider(provider: Providers) {
@@ -51,7 +63,8 @@ function createOpenAIStream(
     systemPrompt: string,
     temperature: number,
     apiKey: string,
-    messages: Message[]
+    messages: Message[],
+    provider: Providers
 ): Promise<ReadableStream> {
     const url =
         OPENAI_API_TYPE === "azure"
@@ -85,7 +98,7 @@ function createOpenAIStream(
         stream: true,
     });
 
-    return createStream(url, headers, body);
+    return createStream(url, headers, body, provider);
 }
 
 function createAnthropicStream(
@@ -93,7 +106,8 @@ function createAnthropicStream(
     systemPrompt: string,
     temperature: number,
     apiKey: string,
-    messages: Message[]
+    messages: Message[],
+    provider: Providers
 ): Promise<ReadableStream> {
     const url = `${ANTHROPIC_API_HOST}/v1/messages`;
 
@@ -106,14 +120,14 @@ function createAnthropicStream(
 
     const body = JSON.stringify({
         model: model.id,
-        messages,
+        messages: [...messages],
         system: systemPrompt,
         max_tokens: model?.tokenLimit || 1000,
         temperature,
         stream: true,
     });
 
-    return createStream(url, headers, body);
+    return createStream(url, headers, body, provider);
 }
 
 function createGroqStream(
@@ -121,7 +135,8 @@ function createGroqStream(
     systemPrompt: string,
     temperature: number,
     apiKey: string,
-    messages: Message[]
+    messages: Message[],
+    provider: Providers
 ): Promise<ReadableStream> {
     const url = `${GROQ_API_HOST}/v1/chat/completions`;
 
@@ -144,13 +159,14 @@ function createGroqStream(
         stream: true,
     });
 
-    return createStream(url, headers, body);
+    return createStream(url, headers, body, provider);
 }
 
 async function createStream(
     url: string,
     headers: HeadersInit,
     body: string,
+    provider: Providers,
     prependString?: string
 ): Promise<ReadableStream> {
     const res = await fetch(url, {
@@ -174,17 +190,34 @@ async function createStream(
             const onParse = (event: ParsedEvent | ReconnectInterval) => {
                 if (event.type === "event") {
                     const data = event.data;
-                    if (data === "[DONE]") {
+
+                    if (provider == Providers.ANTHROPIC) {
+                        try {
+                            if (event.event === 'message_stop') {
+                                controller.close();
+                                return;
+                            }
+                            if (event.event === 'content_block_delta') {
+                                const text = JSON.parse(data).delta.text;
+                                const queue = encoder.encode(text);
+                                controller.enqueue(queue);
+                            }
+                        } catch (e) {
+                            controller.error(e);
+                        }
+
+                    } else if (data === "[DONE]") {
                         controller.close();
                         return;
-                    }
-                    try {
-                        const json = JSON.parse(data);
-                        const text = json.choices[0]?.delta?.content || "";
-                        const queue = encoder.encode(text);
-                        controller.enqueue(queue);
-                    } catch (e) {
-                        controller.error(e);
+                    } else {
+                        try {
+                            const json = JSON.parse(data);
+                            const text = json.choices[0]?.delta?.content || "";
+                            const queue = encoder.encode(text);
+                            controller.enqueue(queue);
+                        } catch (e) {
+                            controller.error(e);
+                        }
                     }
                 }
             };
