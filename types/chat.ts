@@ -1,7 +1,5 @@
-import { AnthropicModel } from './anthropic';
-import { OpenAIModel } from './openai';
-import { ApiKeys, PluginOption } from './plugin';
-import {GroqModel} from "@/types/groq";
+import {ApiKeys, PluginOption} from './plugin';
+import {BaseModel} from "@/types/BaseModel";
 
 export interface Message {
   role: Role;
@@ -11,7 +9,7 @@ export interface Message {
 export type Role = 'assistant' | 'user';
 
 export interface ChatBody {
-  model: OpenAIModel | AnthropicModel | GroqModel;
+  model: BaseModel;
   messages: Message[];
   keys: ApiKeys;
   prompt: string;
@@ -23,7 +21,7 @@ export interface Conversation {
   id: string;
   name: string;
   messages: Message[];
-  model: OpenAIModel | AnthropicModel;
+  model: BaseModel;
   promptMode: string;
   prompt: string;
   temperature: number;

@@ -1,9 +1,4 @@
-export interface GroqModel {
-  id: string;
-  name: string;
-  maxLength: number; // maximum length of a message
-  tokenLimit: number;
-}
+import {BaseModel} from "@/types/BaseModel";
 
 export enum GroqModelID {
   LLAMA_3_8B = 'llama3-8b-8192',
@@ -14,7 +9,7 @@ export enum GroqModelID {
 // in case the `DEFAULT_MODEL` environment variable is not set or set to an unsupported model
 export const fallbackModelID = GroqModelID.LLAMA_3_8B;
 
-export const GroqModels: Record<GroqModelID, GroqModel> = {
+export const GroqModels: Record<GroqModelID, BaseModel> = {
   [GroqModelID.LLAMA_3_8B]: {
     id: GroqModelID.LLAMA_3_8B,
     name: 'LLama3 8B @Groq',

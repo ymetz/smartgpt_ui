@@ -1,10 +1,11 @@
-import { AnthropicModelID } from '@/types/anthropic';
-import { Conversation, Message } from '@/types/chat';
-import { ErrorMessage } from '@/types/error';
-import { FolderInterface } from '@/types/folder';
-import { OpenAIModel, OpenAIModelID } from '@/types/openai';
-import { ApiKeys, PluginKey, Providers } from '@/types/plugin';
-import { Template } from '@/types/template';
+import {AnthropicModelID} from '@/types/anthropic';
+import {Conversation, Message} from '@/types/chat';
+import {ErrorMessage} from '@/types/error';
+import {FolderInterface} from '@/types/folder';
+import {OpenAIModelID} from '@/types/openai';
+import {ApiKeys, PluginKey, Providers} from '@/types/plugin';
+import {Template} from '@/types/template';
+import {BaseModel} from "@/types/BaseModel";
 
 export interface HomeInitialState {
   apiKeys: ApiKeys;
@@ -13,7 +14,7 @@ export interface HomeInitialState {
   lightMode: 'light' | 'dark';
   messageIsStreaming: boolean;
   modelError: ErrorMessage | null;
-  models: OpenAIModel[];
+  models: BaseModel[];
   folders: FolderInterface[];
   conversations: Conversation[];
   selectedConversation: Conversation | undefined;

@@ -1,7 +1,5 @@
-import { Conversation, Message } from './chat';
-import { FolderInterface } from './folder';
-import { OpenAIModel } from './openai';
-import { Prompt } from './prompt';
+import {Conversation, Message} from './chat';
+import {FolderInterface} from './folder';
 
 export type SupportedExportFormats =
   | ExportFormatV1

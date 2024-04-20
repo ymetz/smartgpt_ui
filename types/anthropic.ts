@@ -1,9 +1,4 @@
-export interface AnthropicModel {
-  id: string;
-  name: string;
-  maxLength: number; // maximum length of a message
-  tokenLimit: number;
-}
+import {BaseModel} from "@/types/BaseModel";
 
 export enum AnthropicModelID {
   CALUDE_3_OPUS = 'claude-3-opus-20240229',
@@ -14,7 +9,7 @@ export enum AnthropicModelID {
 // in case the `DEFAULT_MODEL` environment variable is not set or set to an unsupported model
 export const fallbackModelID = AnthropicModelID.CLAUDE_3_SONNET;
 
-export const AnthropicModels: Record<AnthropicModelID, AnthropicModel> = {
+export const AnthropicModels: Record<AnthropicModelID, BaseModel> = {
   [AnthropicModelID.CALUDE_3_OPUS]: {
     id: AnthropicModelID.CALUDE_3_OPUS,
     name: 'Claude 3 Opus',
