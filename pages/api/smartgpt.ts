@@ -6,9 +6,10 @@ import {
   DEFAULT_TEMPERATURE,
 } from '@/utils/app/const';
 import {AnthropicError, GroqError, OpenAIError} from '@/utils/server/errors';
-import {OpenAIModelID, OpenAIModels} from '@/types/openai';
-import {AnthropicModelID, AnthropicModels} from '@/types/anthropic';
-import { GroqModelID, GroqModels } from '@/types/groq';
+import {OpenAIModelID} from '@/types/openai';
+import {AnthropicModelID} from '@/types/anthropic';
+import { GroqModelID} from '@/types/groq';
+import { AllModels } from '@/types/allModels';
 import {ChatBody, Message} from '@/types/chat';
 
 // @ts-expect-error
@@ -17,8 +18,6 @@ import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json';
 import {init, Tiktoken} from '@dqbd/tiktoken/lite/init';
 import {getStream} from "@/pages/api/streamFactory";
 import {BaseModel} from "@/types/BaseModel";
-
-const AllModels = { ...OpenAIModels, ...AnthropicModels, ...GroqModels };
 
 export const config = {
   runtime: 'edge',
