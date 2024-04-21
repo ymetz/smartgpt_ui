@@ -13,11 +13,10 @@ import { saveConversation, saveConversations } from '@/utils/app/conversation';
 import { saveFolders } from '@/utils/app/folders';
 import { exportData, importData } from '@/utils/app/importExport';
 
-import { AnthropicModels } from '@/types/anthropic';
 import { Conversation } from '@/types/chat';
 import { LatestExportFormat, SupportedExportFormats } from '@/types/export';
-import { OpenAIModels } from '@/types/openai';
 import { PluginKey } from '@/types/plugin';
+import { AllModels } from '@/types/allModels';
 
 import HomeContext from '@/pages/api/home/home.context';
 
@@ -30,8 +29,6 @@ import ChatbarContext from './Chatbar.context';
 import { ChatbarInitialState, initialState } from './Chatbar.state';
 
 import { v4 as uuidv4 } from 'uuid';
-
-const AllModels = { ...OpenAIModels, ...AnthropicModels };
 
 export const Chatbar = () => {
   const { t } = useTranslation('sidebar');

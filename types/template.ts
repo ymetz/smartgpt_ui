@@ -1,4 +1,4 @@
-import { OpenAIModel } from './openai';
+import {BaseModel} from "@/types/BaseModel";
 
 export interface Template {
   id: string;
@@ -7,6 +7,6 @@ export interface Template {
   promptMode: string;
   num_asks: number;
   content: string;
-  model: OpenAIModel;
+  model: BaseModel;
   folderId: string | null;
 }

@@ -1,14 +1,11 @@
 import {
   IconFileExport,
   IconInfoCircle,
-  IconQuestionMark,
   IconSettings,
 } from '@tabler/icons-react';
-import { Provider, useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 
 import { useTranslation } from 'next-i18next';
-
-import { Providers } from '@/types/plugin';
 
 import HomeContext from '@/pages/api/home/home.context';
 
@@ -16,11 +13,9 @@ import { Imprint } from '@/components/Imprint/Imprint';
 import { SettingDialog } from '@/components/Settings/SettingDialog';
 
 import { Import } from '../../Settings/Import';
-import { Key } from '../../Settings/Key';
 import { SidebarButton } from '../../Sidebar/SidebarButton';
 import ChatbarContext from '../Chatbar.context';
 import { ClearConversations } from './ClearConversations';
-import { PluginKeys } from './PluginKeys';
 
 export const ChatbarSettings = () => {
   const { t } = useTranslation('sidebar');
@@ -28,15 +23,13 @@ export const ChatbarSettings = () => {
   const [isImprintDialogOpen, setIsImprintDialog] = useState<boolean>(false);
 
   const {
-    state: { apiKeys, lightMode, conversations },
-    dispatch: homeDispatch,
+    state: {conversations },
   } = useContext(HomeContext);
 
   const {
     handleClearConversations,
     handleImportConversations,
     handleExportData,
-    handleApiKeyChange,
   } = useContext(ChatbarContext);
 
   return (
@@ -54,33 +47,10 @@ export const ChatbarSettings = () => {
       />
 
       <SidebarButton
-        text={t('Settings')}
+        text={t('API Keys & Settings')}
         icon={<IconSettings size={18} />}
         onClick={() => setIsSettingDialog(true)}
       />
-
-      {apiKeys && (
-        <>
-          <Key
-            modelName="OpenAI API Key"
-            provider="openai"
-            apiKey={apiKeys[Providers.OPENAI]}
-            onApiKeyChange={(apiKey: string) =>
-              handleApiKeyChange(Providers.OPENAI, apiKey)
-            }
-          />
-          <Key
-            modelName="Anthropic API Key"
-            provider="anthropic"
-            apiKey={apiKeys[Providers.ANTHROPIC] || ''}
-            onApiKeyChange={(apiKey: string) =>
-              handleApiKeyChange(Providers.ANTHROPIC, apiKey)
-            }
-          />
-        </>
-      )}
-
-      {/*<PluginKeys />*/}
 
       <SidebarButton
         text={t('Info & FAQ')}

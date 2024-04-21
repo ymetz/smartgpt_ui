@@ -29,13 +29,14 @@ import { saveFolders } from '@/utils/app/folders';
 import { saveTemplates } from '@/utils/app/prompts';
 import { getSettings } from '@/utils/app/settings';
 
-import { AnthropicModelID, AnthropicModels } from '@/types/anthropic';
+import { AnthropicModelID } from '@/types/anthropic';
+import {GroqModelID} from "@/types/groq";
 import { Conversation } from '@/types/chat';
 import { KeyValuePair } from '@/types/data';
 import { FolderInterface, FolderType } from '@/types/folder';
-import { OpenAIModelID, OpenAIModels, fallbackModelID } from '@/types/openai';
+import { OpenAIModelID, fallbackModelID } from '@/types/openai';
 import { atLeastOneApiKeySet } from '@/types/plugin';
-import { Prompt } from '@/types/prompt';
+import { AllModels } from '@/types/allModels';
 
 import { Chat } from '@/components/Chat/Chat';
 import { Chatbar } from '@/components/Chatbar/Chatbar';
@@ -48,14 +49,8 @@ import { HomeInitialState, initialState } from './home.state';
 import { v4 as uuidv4 } from 'uuid';
 
 interface Props {
-  defaultModelId: OpenAIModelID | AnthropicModelID;
+  defaultModelId: OpenAIModelID | AnthropicModelID | GroqModelID;
 }
-
-const AllModels = {
-  ...OpenAIModels,
-  ...AnthropicModels,
-};
-
 const Home = ({ defaultModelId }: Props) => {
   const { t } = useTranslation('chat');
   const { getModels } = useApiService();
@@ -420,17 +415,17 @@ const Home = ({ defaultModelId }: Props) => {
     </HomeContext.Provider>
   );
 };
+
 export default Home;
 
 export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
   const defaultModelId =
     (process.env.DEFAULT_MODEL &&
       Object.keys(AllModels).includes(
-        process.env.DEFAULT_MODEL as OpenAIModelID | AnthropicModelID,
+        process.env.DEFAULT_MODEL as OpenAIModelID | AnthropicModelID | GroqModelID,
       ) &&
       process.env.DEFAULT_MODEL) ||
     fallbackModelID;
-
   return {
     props: {
       defaultModelId,

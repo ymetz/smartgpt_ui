@@ -1,12 +1,10 @@
-import { IconExternalLink } from '@tabler/icons-react';
-import { useContext } from 'react';
+import {IconExternalLink} from '@tabler/icons-react';
+import {useContext} from 'react';
 
-import { useTranslation } from 'next-i18next';
-
-import { AnthropicModel } from '@/types/anthropic';
-import { OpenAIModel } from '@/types/openai';
+import {useTranslation} from 'next-i18next';
 
 import HomeContext from '@/pages/api/home/home.context';
+import {BaseModel} from "@/types/BaseModel";
 
 export const ModelSelect = () => {
   const { t } = useTranslation('chat');
@@ -21,9 +19,7 @@ export const ModelSelect = () => {
     selectedConversation &&
       handleUpdateConversation(selectedConversation, {
         key: 'model',
-        value: models.find((model) => model.id === e.target.value) as
-          | OpenAIModel
-          | AnthropicModel,
+        value: models.find((model) => model.id === e.target.value) as BaseModel,
       });
   };
 

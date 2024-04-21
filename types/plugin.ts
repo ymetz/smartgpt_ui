@@ -5,7 +5,9 @@ import {
   DEFAULT_SMART_GPT_NUM_ASKS,
 } from '@/utils/app/const';
 
-import { KeyValuePair } from './data';
+import {KeyValuePair} from './data';
+
+import {ApiKeys} from "@/types/providers";
 
 export interface Plugin {
   id: PluginID;
@@ -25,21 +27,6 @@ export interface PluginOption {
 export enum DataType {
   STRING = 'string',
   NUMBER = 'number',
-  BOOLEAN = 'boolean',
-}
-
-export enum Providers {
-  OPENAI = 'openai',
-  ANTHROPIC = 'anthropic',
-  MISTRAL = 'mistral',
-  GEMINI = 'gemini',
-}
-
-export interface ApiKeys {
-  [Providers.OPENAI]: string;
-  [Providers.ANTHROPIC]: string;
-  [Providers.MISTRAL]: string;
-  [Providers.GEMINI]: string;
 }
 
 export const atLeastOneApiKeySet = (apiKeys: ApiKeys): boolean => {

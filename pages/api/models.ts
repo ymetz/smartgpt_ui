@@ -1,16 +1,9 @@
-import {
-  OPENAI_API_HOST,
-  OPENAI_API_TYPE,
-  OPENAI_API_VERSION,
-  OPENAI_ORGANIZATION,
-} from '@/utils/app/const';
+import {OPENAI_API_HOST, OPENAI_API_TYPE, OPENAI_API_VERSION, OPENAI_ORGANIZATION,} from '@/utils/app/const';
 
-import {
-  AnthropicModel,
-  AnthropicModelID,
-  AnthropicModels,
-} from '@/types/anthropic';
-import { OpenAIModel, OpenAIModelID, OpenAIModels } from '@/types/openai';
+import {AnthropicModels,} from '@/types/anthropic';
+import {OpenAIModelID, OpenAIModels} from '@/types/openai';
+import {GroqModels} from "@/types/groq";
+import {BaseModel} from "@/types/BaseModel";
 
 export const config = {
   runtime: 'edge',
@@ -40,6 +33,19 @@ const handler = async (req: Request): Promise<Response> => {
           })),
         ),
         { status: 200 },
+      );
+    } else if (provider === 'groq') {
+      if (key === '') {
+        return new Response(JSON.stringify({}), { status: 200 });
+      }
+      return new Response(
+          JSON.stringify(
+              Object.keys(GroqModels).map((key) => ({
+                id: key,
+                name: GroqModels[key as keyof typeof GroqModels].name,
+              })),
+          ),
+          { status: 200 },
       );
     } else if (provider === 'mistral') {
       url = 'https://api.mistral.com/models';
@@ -86,7 +92,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const json = await response.json();
 
-    const models: OpenAIModel[] = json.data
+    const models: BaseModel[] = json.data
       .map((model: any) => {
         const model_name = OPENAI_API_TYPE === 'azure' ? model.model : model.id;
         for (const [key, value] of Object.entries(OpenAIModelID)) {

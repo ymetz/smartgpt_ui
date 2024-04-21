@@ -1,22 +1,23 @@
-import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const';
-import {
-  AnthropicError,
-  AnthropicStream,
-  OpenAIError,
-  OpenAIStream,
-} from '@/utils/server';
+import {DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE} from '@/utils/app/const';
+import {AnthropicError, GroqError, OpenAIError,} from '@/utils/server/errors';
 
-import { ChatBody, Message } from '@/types/chat';
+import {ChatBody, Message} from '@/types/chat';
 
 // @ts-expect-error
 import wasm from '../../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?module';
 
 import tiktokenModel from '@dqbd/tiktoken/encoders/cl100k_base.json';
-import { Tiktoken, init } from '@dqbd/tiktoken/lite/init';
+import {init, Tiktoken} from '@dqbd/tiktoken/lite/init';
+import {getStream} from "@/pages/api/streamFactory";
 
 export const config = {
   runtime: 'edge',
 };
+
+function createErrorResponse(message: string, error: unknown) {
+  const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+  return new Response(message, { status: 500, statusText: errorMessage });
+}
 
 const handler = async (req: Request): Promise<Response> => {
   try {
@@ -62,33 +63,15 @@ const handler = async (req: Request): Promise<Response> => {
     encoding.free();
 
     let stream: any;
-    if (model.id.includes('gpt')) {
-      const key = keys.openai;
-      stream = await OpenAIStream(
-        model,
-        promptToSend,
-        temperatureToUse,
-        key,
-        messagesToSend,
-      );
-    } else if (model.id.includes('claude')) {
-      const key = keys.anthropic;
-      stream = await AnthropicStream(
-        model,
-        promptToSend,
-        temperatureToUse,
-        key,
-        messagesToSend,
-      );
-    } else {
-      return new Response('Error: Unknown Model', { status: 500 });
+    try {
+      stream = await getStream(model, promptToSend, temperatureToUse, keys, messagesToSend);
+    } catch (error) {
+      return createErrorResponse('Error getting response stream', error);
     }
 
     return new Response(stream);
   } catch (error) {
-    if (error instanceof OpenAIError) {
-      return new Response('Error', { status: 500, statusText: error.message });
-    } else if (error instanceof AnthropicError) {
+    if (error instanceof OpenAIError || error instanceof AnthropicError || error instanceof GroqError) {
       return new Response('Error', { status: 500, statusText: error.message });
     } else {
       return new Response('Error', { status: 500 });
