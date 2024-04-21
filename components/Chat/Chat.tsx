@@ -334,7 +334,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                     Anthropic
                   </a>{' '}
                   in the <strong>settings</strong> located at the bottom left of the application. If you have
-                  never done this before, don't worry! It's a simple process that can be completed in less than a minute
+                  never done this before, don&apos;t worry! It&apos;s a simple process that can be completed in less than a minute
                   if you already have a log-in for ChatGPT, or less than 2 minutes otherwise. Make sure you have funds
                   in your account, or SmartGPT will display an error message.
                 </p>
@@ -357,7 +357,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                   local browser storage for your convenience and security.</p>
               </div>
               <div>
-                <p>Enjoy using SmartGPT, and let's explore the possibilities of AI reasoning together!</p>
+                <p>Enjoy using SmartGPT, and let&apos;s explore the possibilities of AI reasoning together!</p>
               </div>
             </div>
           </div>
