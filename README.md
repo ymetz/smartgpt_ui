@@ -3,14 +3,25 @@
 ## About
 
 SmarGPT enhances the reasoning capabilities of GPT-style models with prompting and in-context learning.
-
-
-
 The interface of SmartGPT uses [Chatbot-UI](https://github.com/mckaywrigley/chatbot-ui) as a foundation.
+
+## Features
+Right now, **SmartGPT UI** already has some great features:
+- Generate smart prompts for your requests utilizing multiple requests, researchers and resolver prompt
+- Ability to utilize multiple models, importantly using different models for original requests and researcher/resolver prompt
+- Optimized default prompts (system, assistant, researcher prompts,...), but also to ability to use your own prompts
+- Save and load prompt configuration
+- A history of conversations, including the option to import and export conversations
+- An easy way to have conversation with models of different providers via the normal chat interface
 
 ## Updates
 
 SmartGPT is not a comercial product, regular updates are not guaranteed.
+
+However, we are working on a [roadmap](https://github.com/ymetz/smartgpt_ui/issues/16).
+Your contributions are welcome!
+
+## Local Deployment
 
 **1. Clone Repo**
 
@@ -24,13 +35,15 @@ git clone
 npm i
 ```
 
-**4. Run App**
+**4. Run App as DEvelopment Server**
 
 ```bash
 npm run dev
 ```
 
 **5. Use It**
+
+By default, the site can be accessed via `localhost:3000`
 
 You should be able to start chatting.
 
