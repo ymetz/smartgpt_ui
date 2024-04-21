@@ -1,41 +1,28 @@
-import { Button } from '@nextui-org/react';
-import { IconClearAll, IconSettings } from '@tabler/icons-react';
-import {
-  MutableRefObject,
-  memo,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import {IconClearAll, IconSettings} from '@tabler/icons-react';
+import {memo, MutableRefObject, useCallback, useContext, useEffect, useRef, useState,} from 'react';
 import toast from 'react-hot-toast';
 
-import { useTranslation } from 'next-i18next';
+import {useTranslation} from 'next-i18next';
 
-import { getEndpoint } from '@/utils/app/api';
-import {
-  saveConversation,
-  saveConversations,
-  updateConversation,
-} from '@/utils/app/conversation';
-import { throttle } from '@/utils/data/throttle';
+import {getEndpoint} from '@/utils/app/api';
+import {saveConversation, saveConversations,} from '@/utils/app/conversation';
+import {throttle} from '@/utils/data/throttle';
 
-import { ChatBody, Conversation, Message } from '@/types/chat';
-import { Plugin, PluginOption, atLeastOneApiKeySet } from '@/types/plugin';
+import {ChatBody, Conversation, Message} from '@/types/chat';
+import {atLeastOneApiKeySet, Plugin, PluginOption} from '@/types/plugin';
 
 import HomeContext from '@/pages/api/home/home.context';
 
 import Spinner from '../Spinner';
-import { ChatInput } from './ChatInput';
-import { ChatLoader } from './ChatLoader';
-import { CustomOptions } from './CustomOptions';
-import { ErrorMessageDiv } from './ErrorMessageDiv';
-import { MemoizedChatMessage } from './MemoizedChatMessage';
-import { ModeSelect } from './ModeSelect';
-import { ModelSelect } from './ModelSelect';
-import { SystemPrompt } from './SystemPrompt';
-import { TemperatureSlider } from './Temperature';
+import {ChatInput} from './ChatInput';
+import {ChatLoader} from './ChatLoader';
+import {CustomOptions} from './CustomOptions';
+import {ErrorMessageDiv} from './ErrorMessageDiv';
+import {MemoizedChatMessage} from './MemoizedChatMessage';
+import {ModeSelect} from './ModeSelect';
+import {ModelSelect} from './ModelSelect';
+import {SystemPrompt} from './SystemPrompt';
+import {TemperatureSlider} from './Temperature';
 
 interface Props {
   stopConversationRef: MutableRefObject<boolean>;
@@ -312,115 +299,130 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   return (
     <div className="relative flex-1 overflow-hidden bg-white dark:bg-[#343541]">
       {!apiKeys || !atLeastOneApiKeySet(apiKeys) ? (
-        <div className="mx-auto flex h-full w-[300px] flex-col justify-center space-y-6 sm:w-[600px]">
-          <div className="text-center text-4xl font-bold text-black dark:text-white">
-            &#129504; SmartGPT
-          </div>
-          <div className="text-center text-lg text-black dark:text-white">
-            <div className="mb-8">{`SmartGPT 2.0: Mixed Models, Better Reasoning.`}</div>
-          </div>
-          <div className="text-center text-gray-500 dark:text-gray-400">
-            <div className="mb-2">
-              SmartGPT is an improved version of default GPT variants
-              integrating different prompting and in-context learning
-              techniques.
+
+          <div className="mx-auto flex h-full w-[300px] flex-col justify-center space-y-8 sm:w-[600px] p-8">
+            <div className="text-center text-5xl font-bold text-black dark:text-white mb-4">
+              🧠 SmartGPT
             </div>
-            <div className="mb-2">
-              <p>Please put in an API key from <a
-                href="https://platform.openai.com/api-keys"
-                target="_blank"
-                rel="noreferrer"
-                className="text-blue-500 hover:underline"
-              >OpenAI</a> and/or <a
-              href="https://console.anthropic.com/"
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-500 hover:underline"
-            >Anthropic</a> to get started. 
-                If you have never done so before, don’t be intimidated, it is doable in &#60; 1 min if you have a log-in already (for ChatGPT), &#60; 2 mins otherwise. 
-                Be sure to have funds in your account or otherwise SmartGPT will freak out and whinge!
-              </p>
+            <div className="text-center text-xl text-black dark:text-white mb-8">
+              <div className="mb-4">SmartGPT 2.0: Mixed Models, Better Reasoning.</div>
+            </div>
+            <div className="text-left text-gray-700 dark:text-gray-300 text-base">
+              <div className="mb-6">
+                SmartGPT is an improved version of default GPT variants integrating different prompting and in-context
+                learning techniques.
               </div>
-            <div className="mb-2">
-              <p>
-                If you want a 1 min walkthrough of getting an API key, here it is: <a
-                href="https://www.youtube.com/watch?v=OB99E7Y1cMA"
-                target="_blank"
-                rel="noreferrer"
-                className="text-blue-500 hover:underline"
-              >https://www.youtube.com/watch?v=OB99E7Y1cMA</a>
-              </p>
+              <hr className="border-gray-300 dark:border-gray-600 mb-6"/>
+              <div className="mb-6">
+                <p>
+                  To get started, please add your API key from{' '}
+                  <a
+                      href="https://platform.openai.com/api-keys"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-500 hover:underline"
+                  >
+                    OpenAI
+                  </a>{' '}
+                  and/or{' '}
+                  <a
+                      href="https://console.anthropic.com/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-500 hover:underline"
+                  >
+                    Anthropic
+                  </a>{' '}
+                  in the <strong>settings</strong> located at the bottom left of the application. If you have
+                  never done this before, don't worry! It's a simple process that can be completed in less than a minute
+                  if you already have a log-in for ChatGPT, or less than 2 minutes otherwise. Make sure you have funds
+                  in your account, or SmartGPT will display an error message.
+                </p>
               </div>
-              <div className="mb-2">
-              <p>
-                None of your API keys are stored on the server, they are only persisted in local browser storage.
-              </p>
-            </div>
-            <div className="mb-2">
-              <p>
-                Enjoy, and let’s explore what’s possible in AI reasoning together.
-              </p>
+              <div className="mb-6">
+                <p>
+                  If you need a quick 1-minute walkthrough on obtaining an API key, watch this video:{' '}
+                  <a
+                      href="https://www.youtube.com/watch?v=OB99E7Y1cMA"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-500 hover:underline"
+                  >
+                    https://www.youtube.com/watch?v=OB99E7Y1cMA
+                  </a>
+                </p>
+              </div>
+              <div className="mb-6">
+                <p>Rest assured that none of your API keys are stored on the server; they are only persisted in your
+                  local browser storage for your convenience and security.</p>
+              </div>
+              <div>
+                <p>Enjoy using SmartGPT, and let's explore the possibilities of AI reasoning together!</p>
+              </div>
             </div>
           </div>
-        </div>
+
+
       ) : modelError ? (
-        <ErrorMessageDiv error={modelError} />
+          <ErrorMessageDiv error={modelError}/>
       ) : (
-        <>
-          <div
-            className="max-h-[calc(100vh-120px)] overflow-x-hidden"
-            ref={chatContainerRef}
-            onScroll={handleScroll}
-          >
-            {selectedConversation?.messages.length === 0 ? (
-              <>
-                <div className="mx-auto flex flex-col space-y-5 max-h-[95vh] md:space-y-10 px-3 mb-200 pt-5 md:pt-12 sm:max-w-[700px]">
-                  <div className="text-center text-3xl font-semibold text-gray-800 dark:text-gray-100">
-                    {models.length === 0 ? (
-                      <div>
-                        <Spinner size="16px" className="mx-auto" />
+          <>
+            <div
+                className="max-h-[calc(100vh-120px)] overflow-x-hidden"
+                ref={chatContainerRef}
+                onScroll={handleScroll}
+            >
+              {selectedConversation?.messages.length === 0 ? (
+                  <>
+                    <div
+                        className="mx-auto flex flex-col space-y-5 max-h-[95vh] md:space-y-10 px-3 mb-200 pt-5 md:pt-12 sm:max-w-[700px]">
+                      <div className="text-center text-3xl font-semibold text-gray-800 dark:text-gray-100">
+                        {models.length === 0 ? (
+                            <div>
+                              <Spinner size="16px" className="mx-auto"/>
+                            </div>
+                        ) : (
+                            '🧠 SmartGPT 2.0'
+                        )}
                       </div>
-                    ) : (
-                      '🧠 SmartGPT 2.0'
-                    )}
-                  </div>
 
-                  {models.length > 0 && (
-                    <div className="flex h-full flex-col space-y-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-600">
-                      <ModeSelect
-                        label={t('Prompt Mode Select')}
-                        onChangeMode={(mode) =>
-                          handleUpdateConversation(selectedConversation, {
-                            key: 'promptMode',
-                            value: mode,
-                          })
-                        }
-                      />
+                      {models.length > 0 && (
+                          <div
+                              className="flex h-full flex-col space-y-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-600">
+                            <ModeSelect
+                                label={t('Prompt Mode Select')}
+                                onChangeMode={(mode) =>
+                                    handleUpdateConversation(selectedConversation, {
+                                      key: 'promptMode',
+                                      value: mode,
+                                    })
+                                }
+                            />
 
-                      <ModelSelect />
+                            <ModelSelect/>
 
-                      <SystemPrompt
-                        conversation={selectedConversation}
-                        onChangePrompt={(prompt) =>
-                          handleUpdateConversation(selectedConversation, {
-                            key: 'prompt',
-                            value: prompt,
-                          })
-                        }
-                      />
+                            <SystemPrompt
+                                conversation={selectedConversation}
+                                onChangePrompt={(prompt) =>
+                                    handleUpdateConversation(selectedConversation, {
+                                      key: 'prompt',
+                                      value: prompt,
+                                    })
+                                }
+                            />
 
-                      <TemperatureSlider
-                        label={t('Temperature')}
-                        onChangeTemperature={(temperature) =>
-                          handleUpdateConversation(selectedConversation, {
-                            key: 'temperature',
-                            value: temperature,
-                          })
-                        }
-                      />
+                            <TemperatureSlider
+                                label={t('Temperature')}
+                                onChangeTemperature={(temperature) =>
+                                    handleUpdateConversation(selectedConversation, {
+                                      key: 'temperature',
+                                      value: temperature,
+                                    })
+                                }
+                            />
 
-                      {selectedConversation?.promptMode === 'smartgpt' && (
-                        <CustomOptions
+                            {selectedConversation?.promptMode === 'smartgpt' && (
+                                <CustomOptions
                           label={t('SmartGPT Options')}
                           promptMode={
                             selectedConversation?.promptMode || 'default'
