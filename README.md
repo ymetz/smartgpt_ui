@@ -49,3 +49,15 @@ When deploying the application, the following environment variables can be set:
 | DEFAULT_RESOLVER_PROMPT           |                                | The default prompt used for the resolver, if not provided, the resolver will use the default prompt for the selected prompt mode          |
 | DEFAULT_TEMPERATURE               | `0.8`                          | The default temperature used for the system, if not provided, the system will use the default temperature for the selected prompt mode    |
 | DEFAULT_PROMPT_MODE               | `smartgpt`                     | The default prompt mode, options are `smartgpt` or `default`                                                                                 |
+
+If you deploy *smartgpt-ui* locally, you have the possiblity to set API keys via environment variables in the backend. This way you do not need set API Keys in the frontend. 
+Of course, we do not recommend this for publicily accessible deployments.
+
+| Environment Variable              | Default value                  | Description                                                                                                                               |
+| --------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| OPENAI_API_KEY                    |                                | The default API key used for authentication with OpenAI        |                                                                           |
+| ANTHROPIC_API_KEY                    |                                | The default API key used for authentication with Anthropic Claude API |
+| GROQ_API_KEY                    |                                | The default API key used for authentication with Groq API  |
+| GEMINI_API_KEY                    |                                | The default API key used for authentication with Google Gemini API (WIP)  |
+
+   

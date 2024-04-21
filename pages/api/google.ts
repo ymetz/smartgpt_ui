@@ -1,3 +1,9 @@
+/***
+ * 
+ * This file is currently not actively maintained and used.
+ * It could be used to re-establish the google search functionality in the future.
+ */
+
 import { NextApiRequest, NextApiResponse } from 'next';
 
 import { OPENAI_API_HOST } from '@/utils/app/const';
@@ -115,7 +121,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse<any>) => {
     const answerRes = await fetch(`${OPENAI_API_HOST}/v1/chat/completions`, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${key}`,
+        Authorization: `Bearer ${key ? key : process.env.OPENAI_API_KEY}`,
         ...(process.env.OPENAI_ORGANIZATION && {
           'OpenAI-Organization': process.env.OPENAI_ORGANIZATION,
         }),

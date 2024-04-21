@@ -59,10 +59,10 @@ const handler = async (req: Request): Promise<Response> => {
       headers: {
         'Content-Type': 'application/json',
         ...(OPENAI_API_TYPE === 'openai' && {
-          Authorization: `Bearer ${key}`,
+          Authorization: `Bearer ${key ? key : process.env.OPENAI_API_KEY}`,
         }),
         ...(OPENAI_API_TYPE === 'azure' && {
-          'api-key': `${key}`,
+          'api-key': `${key ? key : process.env.OPENAI_API_KEY}`,
         }),
         ...(OPENAI_API_TYPE === 'openai' &&
           OPENAI_ORGANIZATION && {
