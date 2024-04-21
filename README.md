@@ -39,7 +39,7 @@ You should be able to start chatting.
 When deploying the application, the following environment variables can be set:
 
 | Environment Variable              | Default value                  | Description                                                                                                                               |
-| --------------------------------- | ------------------------------ | OpenAI                                                                                   |
+| --------------------------------- | ------------------------------ | ------------------------------                                                                                                            |
 | OPENAI_API_HOST                   | `https://api.openai.com`       | The base url, for Azure use `https://<endpoint>.openai.azure.com`                                                                         |
 | OPENAI_API_TYPE                   | `openai`                       | The API type, options are `openai` or `azure`                                                                                             |
 | OPENAI_API_VERSION                | `2023-03-15-preview`           | Only applicable for Azure OpenAI                                                                                                          |
