@@ -28,6 +28,14 @@ export async function getStream(
     return modelSpecificStream(model, prompt, temperatureToUse, apiKey, messages, provider);
 }
 
+/**
+ * Retrieves the provider for a given model by checking if a given keyword
+ * like 'gpt' appears in the model.id or model.name.
+ *
+ * @param {BaseModel} model - The model for which to retrieve the provider.
+ * @return {Providers} The provider associated with the model.
+ * @throws {Error} If the provider for the model cannot be determined.
+ */
 function getProviderFor(model: BaseModel): Providers {
     const providersMapping: Record<string, Providers> = {
         'gpt': Providers.OPENAI,
