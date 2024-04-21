@@ -8,6 +8,7 @@ import {
 import {AnthropicError, GroqError, OpenAIError} from '@/utils/server/errors';
 import {OpenAIModelID, OpenAIModels} from '@/types/openai';
 import {AnthropicModelID, AnthropicModels} from '@/types/anthropic';
+import { GroqModelID, GroqModels } from '@/types/groq';
 import {ChatBody, Message} from '@/types/chat';
 
 // @ts-expect-error
@@ -17,7 +18,7 @@ import {init, Tiktoken} from '@dqbd/tiktoken/lite/init';
 import {getStream} from "@/pages/api/streamFactory";
 import {BaseModel} from "@/types/BaseModel";
 
-const AllModels = { ...OpenAIModels, ...AnthropicModels };
+const AllModels = { ...OpenAIModels, ...AnthropicModels, ...GroqModels };
 
 export const config = {
   runtime: 'edge',
@@ -47,7 +48,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (!followUpModelId || followUpModelId === '') {
         followUpModel = model;
     } else {
-        followUpModel = AllModels[followUpModelId as OpenAIModelID | AnthropicModelID] as BaseModel;
+        followUpModel = AllModels[followUpModelId as OpenAIModelID | AnthropicModelID | GroqModelID] as BaseModel;
       }
     
     let messagesToSend: Message[] = [];
