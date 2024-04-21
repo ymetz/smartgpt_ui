@@ -47,7 +47,7 @@ export const ChatbarSettings = () => {
       />
 
       <SidebarButton
-        text={t('Settings')}
+        text={t('API Keys & Settings')}
         icon={<IconSettings size={18} />}
         onClick={() => setIsSettingDialog(true)}
       />
